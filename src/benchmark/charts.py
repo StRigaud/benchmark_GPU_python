@@ -28,6 +28,9 @@ def load_benchmark_results(filepath: str) -> pd.DataFrame:
     
     results = []
     for benchmark in data["benchmarks"]:
+        # Extract extra_info if available
+        extra_info = benchmark.get("extra_info", {})
+        
         results.append({
             "name": benchmark["name"],
             "mean": benchmark["stats"]["mean"],
@@ -35,29 +38,12 @@ def load_benchmark_results(filepath: str) -> pd.DataFrame:
             "min": benchmark["stats"]["min"],
             "max": benchmark["stats"]["max"],
             "rounds": benchmark["stats"]["rounds"],
+            "size": extra_info.get("size", "unknown"),
+            "backend": extra_info.get("backend", "unknown"),
+            "operation": extra_info.get("operation", "unknown"),
         })
     
     return pd.DataFrame(results)
-
-
-def parse_benchmark_name(name: str) -> tuple:
-    """
-    Parse benchmark name to extract operation and backend.
-    
-    Args:
-        name: Benchmark test name (e.g., "test_add[numpy-small]")
-    
-    Returns:
-        Tuple of (operation, backend, size)
-    """
-    # Expected format: test_operation[backend-size]
-    if "[" in name and "]" in name:
-        base = name.split("[")[0].replace("test_", "")
-        params = name.split("[")[1].rstrip("]")
-        parts = params.split("-")
-        if len(parts) >= 2:
-            return base, parts[0], parts[1]
-    return name, "unknown", "unknown"
 
 
 def create_comparison_chart(
@@ -66,79 +52,81 @@ def create_comparison_chart(
     title: str = "Benchmark Comparison"
 ) -> None:
     """
-    Create a bar chart comparing benchmark results across backends.
+    Create bar charts comparing benchmark results across backends.
+    Creates one chart per size, showing all operations with different backends.
     
     Args:
         df: DataFrame with benchmark results.
         output_path: Path to save the chart.
         title: Chart title.
     """
-    # Parse benchmark names
-    df["operation"] = df["name"].apply(lambda x: parse_benchmark_name(x)[0])
-    df["backend"] = df["name"].apply(lambda x: parse_benchmark_name(x)[1])
-    df["size"] = df["name"].apply(lambda x: parse_benchmark_name(x)[2])
+    # Get unique sizes, operations, and backends
+    sizes = sorted(df["size"].unique())
+    operations = sorted(df["operation"].unique())
+    backends = sorted(df["backend"].unique())
     
-    # Create pivot table for plotting
-    operations = df["operation"].unique()
-    backends = df["backend"].unique()
-    sizes = df["size"].unique()
-    
-    # Create figure with subplots for each operation
-    n_ops = len(operations)
-    fig, axes = plt.subplots(1, max(n_ops, 1), figsize=(6 * max(n_ops, 1), 6))
-    
-    if n_ops == 1:
-        axes = [axes]
-    
+    # Color mapping for backends
     colors = {"numpy": "#1f77b4", "cupy": "#ff7f0e", "pyclesperanto": "#2ca02c"}
     
-    for idx, op in enumerate(operations):
-        ax = axes[idx]
-        op_data = df[df["operation"] == op]
+    # Create one chart per size
+    for size in sizes:
+        size_data = df[df["size"] == size]
         
-        x_positions = range(len(sizes))
+        if size_data.empty:
+            continue
+        
+        # Create figure
+        fig, ax = plt.subplots(figsize=(12, 6))
+        
+        x_positions = range(len(operations))
         width = 0.25
         
+        # Plot bars for each backend
         for i, backend in enumerate(backends):
-            backend_data = op_data[op_data["backend"] == backend]
-            if not backend_data.empty:
-                means = []
-                stds = []
-                for size in sizes:
-                    size_data = backend_data[backend_data["size"] == size]
-                    if not size_data.empty:
-                        means.append(size_data["mean"].values[0] * 1000)  # Convert to ms
-                        stds.append(size_data["stddev"].values[0] * 1000)
-                    else:
-                        means.append(0)
-                        stds.append(0)
-                
-                offset = (i - len(backends) / 2 + 0.5) * width
-                color = colors.get(backend, f"C{i}")
-                ax.bar(
-                    [x + offset for x in x_positions],
-                    means,
-                    width,
-                    yerr=stds,
-                    label=backend,
-                    color=color,
-                    capsize=3
-                )
+            backend_data = size_data[size_data["backend"] == backend]
+            
+            if backend_data.empty:
+                continue
+            
+            means = []
+            stds = []
+            for operation in operations:
+                op_data = backend_data[backend_data["operation"] == operation]
+                if not op_data.empty:
+                    means.append(op_data["mean"].values[0] * 1000)  # Convert to ms
+                    stds.append(op_data["stddev"].values[0] * 1000)
+                else:
+                    means.append(0)
+                    stds.append(0)
+            
+            offset = (i - len(backends) / 2 + 0.5) * width
+            color = colors.get(backend, f"C{i}")
+            ax.bar(
+                [x + offset for x in x_positions],
+                means,
+                width,
+                yerr=stds,
+                label=backend,
+                color=color,
+                capsize=3
+            )
         
-        ax.set_xlabel("Array Size")
+        ax.set_xlabel("Operation")
         ax.set_ylabel("Time (ms)")
-        ax.set_title(f"{op.replace('_', ' ').title()}")
+        ax.set_title(f"{title} - Size: {size}")
         ax.set_xticks(list(x_positions))
-        ax.set_xticklabels(sizes)
+        ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
         ax.legend()
         ax.grid(axis="y", alpha=0.3)
-    
-    plt.suptitle(title, fontsize=14, fontweight="bold")
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches="tight")
-    plt.close()
-    
-    print(f"Chart saved to: {output_path}")
+        
+        # Save chart with size in filename
+        base_path = Path(output_path)
+        size_output = base_path.parent / f"{base_path.stem}_{size}{base_path.suffix}"
+        plt.tight_layout()
+        plt.savefig(size_output, dpi=150, bbox_inches="tight")
+        plt.close()
+        
+        print(f"Chart saved to: {size_output}")
 
 
 def create_speedup_chart(
@@ -147,88 +135,93 @@ def create_speedup_chart(
     output_path: str = "speedup_comparison.png"
 ) -> None:
     """
-    Create a speedup chart showing performance relative to baseline.
+    Create speedup charts showing performance relative to baseline.
+    Creates one chart per size.
     
     Args:
         df: DataFrame with benchmark results.
         baseline: Baseline backend for comparison.
         output_path: Path to save the chart.
     """
-    # Parse benchmark names
-    df["operation"] = df["name"].apply(lambda x: parse_benchmark_name(x)[0])
-    df["backend"] = df["name"].apply(lambda x: parse_benchmark_name(x)[1])
-    df["size"] = df["name"].apply(lambda x: parse_benchmark_name(x)[2])
+    # Get unique sizes, operations, and backends
+    sizes = sorted(df["size"].unique())
+    operations = sorted(df["operation"].unique())
+    backends = [b for b in sorted(df["backend"].unique()) if b != baseline]
     
-    operations = df["operation"].unique()
-    backends = [b for b in df["backend"].unique() if b != baseline]
-    sizes = df["size"].unique()
+    # Color mapping for backends
+    colors = {"cupy": "#ff7f0e", "pyclesperanto": "#2ca02c"}
     
-    # Calculate speedups
-    speedup_data = []
-    for op in operations:
-        for size in sizes:
-            baseline_data = df[(df["operation"] == op) & 
-                               (df["backend"] == baseline) & 
-                               (df["size"] == size)]
+    # Create one chart per size
+    for size in sizes:
+        size_data = df[df["size"] == size]
+        
+        if size_data.empty:
+            continue
+        
+        # Calculate speedups
+        speedup_data = []
+        for operation in operations:
+            baseline_data = size_data[(size_data["operation"] == operation) & 
+                                      (size_data["backend"] == baseline)]
             if baseline_data.empty:
                 continue
             baseline_time = baseline_data["mean"].values[0]
             
             for backend in backends:
-                backend_data = df[(df["operation"] == op) & 
-                                   (df["backend"] == backend) & 
-                                   (df["size"] == size)]
+                backend_data = size_data[(size_data["operation"] == operation) & 
+                                         (size_data["backend"] == backend)]
                 if not backend_data.empty:
                     speedup = baseline_time / backend_data["mean"].values[0]
                     speedup_data.append({
-                        "operation": op,
+                        "operation": operation,
                         "backend": backend,
-                        "size": size,
                         "speedup": speedup
                     })
-    
-    if not speedup_data:
-        print("No speedup data available")
-        return
-    
-    speedup_df = pd.DataFrame(speedup_data)
-    
-    # Create figure
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    colors = {"cupy": "#ff7f0e", "pyclesperanto": "#2ca02c"}
-    x_labels = []
-    x = 0
-    width = 0.35
-    
-    for op in operations:
-        for size in sizes:
-            x_labels.append(f"{op}\n({size})")
-            for i, backend in enumerate(backends):
-                data = speedup_df[(speedup_df["operation"] == op) & 
-                                   (speedup_df["backend"] == backend) & 
-                                   (speedup_df["size"] == size)]
+        
+        if not speedup_data:
+            continue
+        
+        speedup_df = pd.DataFrame(speedup_data)
+        
+        # Create figure
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        x_positions = range(len(operations))
+        width = 0.35
+        
+        for i, backend in enumerate(backends):
+            backend_speedups = []
+            for operation in operations:
+                data = speedup_df[(speedup_df["operation"] == operation) & 
+                                  (speedup_df["backend"] == backend)]
                 if not data.empty:
-                    offset = (i - len(backends) / 2 + 0.5) * width
-                    color = colors.get(backend, f"C{i}")
-                    ax.bar(x + offset, data["speedup"].values[0], width, 
-                          label=backend if x == 0 else "", color=color)
-            x += 1
-    
-    ax.axhline(y=1, color="gray", linestyle="--", alpha=0.7, label=f"{baseline} baseline")
-    ax.set_xlabel("Operation (Size)")
-    ax.set_ylabel(f"Speedup vs {baseline}")
-    ax.set_title(f"GPU Speedup Comparison (baseline: {baseline})")
-    ax.set_xticks(range(len(x_labels)))
-    ax.set_xticklabels(x_labels, rotation=45, ha="right")
-    ax.legend()
-    ax.grid(axis="y", alpha=0.3)
-    
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches="tight")
-    plt.close()
-    
-    print(f"Speedup chart saved to: {output_path}")
+                    backend_speedups.append(data["speedup"].values[0])
+                else:
+                    backend_speedups.append(0)
+            
+            offset = (i - len(backends) / 2 + 0.5) * width
+            color = colors.get(backend, f"C{i}")
+            ax.bar([x + offset for x in x_positions], backend_speedups, width,
+                   label=backend, color=color)
+        
+        ax.axhline(y=1, color="gray", linestyle="--", alpha=0.7, 
+                   label=f"{baseline} baseline")
+        ax.set_xlabel("Operation")
+        ax.set_ylabel(f"Speedup vs {baseline}")
+        ax.set_title(f"GPU Speedup Comparison - Size: {size}")
+        ax.set_xticks(list(x_positions))
+        ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
+        ax.legend()
+        ax.grid(axis="y", alpha=0.3)
+        
+        # Save chart with size in filename
+        base_path = Path(output_path)
+        size_output = base_path.parent / f"{base_path.stem}_{size}{base_path.suffix}"
+        plt.tight_layout()
+        plt.savefig(size_output, dpi=150, bbox_inches="tight")
+        plt.close()
+        
+        print(f"Speedup chart saved to: {size_output}")
 
 
 def main():
