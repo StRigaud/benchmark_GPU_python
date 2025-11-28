@@ -1,0 +1,27 @@
+[project]
+name = "benchmark"
+version = "0.1.0"
+description = "A minimalist Python library for benchmarking GPU operations comparing numpy, cupy, and pyclesperanto"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[tasks]
+test = "pytest tests/ -v"
+benchmark = "pytest tests/test_benchmarks.py -v --benchmark-only"
+charts = "python -m benchmark.charts"
+
+[dependencies]
+python = ">=3.10"
+numpy = ">=1.24"
+pytest = ">=7.0"
+pytest-benchmark = ">=4.0"
+matplotlib = ">=3.7"
+pandas = ">=2.0"
+
+[feature.gpu.dependencies]
+cupy = ">=12.0"
+pyclesperanto = ">=0.12"
+
+[environments]
+default = { features = [], solve-group = "default" }
+gpu = { features = ["gpu"], solve-group = "default" }

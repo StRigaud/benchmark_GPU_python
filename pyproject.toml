@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "benchmark"
+version = "0.1.0"
+description = "A minimalist Python library for benchmarking GPU operations comparing numpy, cupy, and pyclesperanto"
+readme = "README.md"
+license = "BSD-3-Clause"
+requires-python = ">=3.10"
+authors = [
+    { name = "Stephane Rigaud" }
+]
+keywords = ["benchmark", "gpu", "numpy", "cupy", "pyclesperanto"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "numpy>=1.24",
+    "pytest>=7.0",
+    "pytest-benchmark>=4.0",
+    "matplotlib>=3.7",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "cupy>=12.0",
+    "pyclesperanto>=0.12",
+]
+
+[project.scripts]
+benchmark-charts = "benchmark.charts:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/benchmark"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"
