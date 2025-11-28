@@ -95,6 +95,12 @@ def cle_arrays(size_name):
 def test_elementwise_numpy(benchmark, numpy_arrays):
     """Benchmark numpy array elementwise operation."""
     a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'elementwise'
+    })
     result = benchmark(numpy_elementwise, a)
     assert result.shape == a.shape
 
@@ -103,6 +109,12 @@ def test_elementwise_numpy(benchmark, numpy_arrays):
 def test_elementwise_cupy(benchmark, cupy_arrays):
     """Benchmark cupy array elementwise operation."""
     a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'elementwise'
+    })
     result = benchmark(cupy_elementwise, a)
     assert result.shape == a.shape
 
@@ -111,6 +123,12 @@ def test_elementwise_cupy(benchmark, cupy_arrays):
 def test_elementwise_pyclesperanto(benchmark, cle_arrays):
     """Benchmark pyclesperanto array elementwise operation."""
     a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'elementwise'
+    })
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
 
@@ -121,6 +139,12 @@ def test_elementwise_pyclesperanto(benchmark, cle_arrays):
 def test_gaussian_numpy(benchmark, numpy_arrays):
     """Benchmark numpy gaussian filter."""
     a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'gaussian'
+    })
     result = benchmark(numpy_gaussian, a, sigma=2.0)
     assert result.shape == a.shape
 
@@ -129,6 +153,12 @@ def test_gaussian_numpy(benchmark, numpy_arrays):
 def test_gaussian_cupy(benchmark, cupy_arrays):
     """Benchmark cupy gaussian filter."""
     a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'gaussian'
+    })
     result = benchmark(cupy_gaussian, a, sigma=2.0)
     assert result.shape == a.shape
 
@@ -137,6 +167,12 @@ def test_gaussian_cupy(benchmark, cupy_arrays):
 def test_gaussian_pyclesperanto(benchmark, cle_arrays):
     """Benchmark pyclesperanto gaussian filter."""
     a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'gaussian'
+    })
     result = benchmark(cle_gaussian, a, sigma=2.0)
 
 
@@ -147,6 +183,12 @@ def test_gaussian_pyclesperanto(benchmark, cle_arrays):
 def test_slicing_numpy(benchmark, numpy_arrays):
     """Benchmark numpy slicing."""
     a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'slicing'
+    })
     result = benchmark(numpy_slicing, a)
     assert True
 
@@ -155,6 +197,12 @@ def test_slicing_numpy(benchmark, numpy_arrays):
 def test_slicing_cupy(benchmark, cupy_arrays):
     """Benchmark cupy slicing."""
     a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'slicing'
+    })
     result = benchmark(cupy_slicing, a)
     assert True
 
@@ -163,6 +211,12 @@ def test_slicing_cupy(benchmark, cupy_arrays):
 def test_slicing_pyclesperanto(benchmark, cle_arrays):
     """Benchmark pyclesperanto slicing."""
     a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'slicing'
+    })
     result = benchmark(cle_slicing, a)
     assert True
 
@@ -173,6 +227,12 @@ def test_slicing_pyclesperanto(benchmark, cle_arrays):
 def test_sum_numpy(benchmark, numpy_arrays):
     """Benchmark numpy array sum operation."""
     a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'sum'
+    })
     result = benchmark(numpy_sum, a)
     assert np.isscalar(result)
 
@@ -181,6 +241,12 @@ def test_sum_numpy(benchmark, numpy_arrays):
 def test_sum_cupy(benchmark, cupy_arrays):
     """Benchmark cupy array sum operation."""
     a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'sum'
+    })
     result = benchmark(cupy_sum, a)
     assert np.isscalar(result)
 
@@ -189,5 +255,11 @@ def test_sum_cupy(benchmark, cupy_arrays):
 def test_sum_pyclesperanto(benchmark, cle_arrays):
     """Benchmark pyclesperanto array sum operation."""
     a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'sum'
+    })
     result = benchmark(cle_sum, a)
     assert np.isscalar(result)
