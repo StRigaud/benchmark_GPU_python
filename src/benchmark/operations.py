@@ -13,9 +13,9 @@ from scipy import ndimage as ndi
 # NumPy Operations
 # ============================================================================
 
-def numpy_add(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def numpy_elementwise(a: np.ndarray) -> np.ndarray:
     """Add two arrays using NumPy."""
-    return np.add(a, b)
+    return np.sin(a) ** 2 + np.cos(a) ** 2
 
 
 def numpy_gaussian(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
@@ -23,19 +23,23 @@ def numpy_gaussian(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
     return ndi.gaussian_filter(data, sigma=sigma)
 
 
-def numpy_threshold(data: np.ndarray, threshold: float = 0.5) -> np.ndarray:
+def numpy_slicing(data: np.ndarray) -> np.ndarray:
     """Apply threshold using NumPy."""
-    return (data > threshold).astype(np.float32)
+    return data[::3].copy()
+
+def numpy_sum(data: np.ndarray) -> float:
+    """Compute sum using NumPy."""
+    return np.sum(data)
 
 
 # ============================================================================
 # CuPy Operations
 # ============================================================================
 
-def cupy_add(a, b):
+def cupy_elementwise(a):
     """Add two arrays using CuPy."""
     import cupy as cp
-    result = cp.add(a, b)
+    result = cp.sin(a) ** 2 + cp.cos(a) ** 2
     cp.cuda.Stream.null.synchronize()  # Ensure GPU computation is complete
     return result
 
@@ -49,10 +53,17 @@ def cupy_gaussian(data, sigma: float = 1.0):
     return result
 
 
-def cupy_threshold(data, threshold: float = 0.5):
+def cupy_slicing(data):
     """Apply threshold using CuPy."""
     import cupy as cp
-    result = (data > threshold).astype(cp.float32)
+    result = data[::3].copy()
+    cp.cuda.Stream.null.synchronize()
+    return result
+
+def cupy_sum(data):
+    """Compute sum using CuPy."""
+    import cupy as cp
+    result = cp.sum(data)
     cp.cuda.Stream.null.synchronize()
     return result
 
@@ -61,23 +72,28 @@ def cupy_threshold(data, threshold: float = 0.5):
 # pyclesperanto Operations
 # ============================================================================
 
-def cle_add(a, b):
+def cle_elementwise(a):
     """Add two arrays using pyclesperanto."""
     import pyclesperanto as cle
-    return cle.add_images_weighted(a, b, factor1=1.0, factor2=1.0)
+    cle.set_wait_for_kernel_finish(True)
+    return cle.sin(a) ** 2 + cle.cos(a) ** 2
 
 
 def cle_gaussian(data, sigma: float = 1.0):
     """Apply Gaussian filter using pyclesperanto."""
     import pyclesperanto as cle
-    # Only apply sigma to x and y dimensions for 2D data
-    if len(data.shape) == 2:
-        return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=0)
-    else:
-        return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=sigma)
+    cle.set_wait_for_kernel_finish(True)
+    return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=sigma)
 
 
-def cle_threshold(data, threshold: float = 0.5):
+def cle_slicing(data):
     """Apply threshold using pyclesperanto."""
     import pyclesperanto as cle
-    return cle.greater_constant(data, constant=threshold)
+    cle.set_wait_for_kernel_finish(True)
+    return data[::3]
+
+def cle_sum(data):
+    """Compute sum using pyclesperanto."""
+    import pyclesperanto as cle
+    cle.set_wait_for_kernel_finish(True)
+    return cle.sum_of_all_pixels(data)

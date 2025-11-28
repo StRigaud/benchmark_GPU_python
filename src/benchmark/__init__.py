@@ -6,17 +6,19 @@ for common image processing operations.
 """
 
 from benchmark.operations import (
-    numpy_add,
+    numpy_elementwise,
     numpy_gaussian,
-    numpy_threshold,
+    numpy_slicing,
+    numpy_sum,
 )
 from benchmark.utils import check_backend_availability
 
 __version__ = "0.1.0"
 
 __all__ = [
-    "numpy_add",
+    "numpy_elementwise",
     "numpy_gaussian",
-    "numpy_threshold",
+    "numpy_slicing",
+    "numpy_sum",
     "check_backend_availability",
 ]

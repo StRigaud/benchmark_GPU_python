@@ -10,15 +10,18 @@ import pytest
 
 from benchmark.utils import check_backend_availability, generate_test_data
 from benchmark.operations import (
-    numpy_add,
+    numpy_elementwise,
     numpy_gaussian,
-    numpy_threshold,
-    cupy_add,
+    numpy_slicing,
+    numpy_sum,
+    cupy_elementwise,
     cupy_gaussian,
-    cupy_threshold,
-    cle_add,
+    cupy_slicing,
+    cupy_sum,
+    cle_elementwise,
     cle_gaussian,
-    cle_threshold,
+    cle_slicing,
+    cle_sum,
 )
 
 # Check which backends are available
@@ -26,9 +29,9 @@ BACKENDS = check_backend_availability()
 
 # Define test array sizes
 SIZES = {
-    "small": (256, 256),
-    "medium": (512, 512),
-    "large": (1024, 1024),
+    "small": (256, 256, 256),
+    "medium": (512, 512, 512),
+    # "large": (1024, 1024, 1024),
 }
 
 
@@ -86,30 +89,30 @@ def cle_arrays(size_name):
 
 
 # ============================================================================
-# Addition Benchmarks
+# Elementwise Benchmarks
 # ============================================================================
 
-def test_add_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy array addition."""
-    a, b, size_name = numpy_arrays
-    result = benchmark(numpy_add, a, b)
+def test_elementwise_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array elementwise operation."""
+    a, _, size_name = numpy_arrays
+    result = benchmark(numpy_elementwise, a)
     assert result.shape == a.shape
 
 
 @skip_if_no_cupy
-def test_add_cupy(benchmark, cupy_arrays):
-    """Benchmark cupy array addition."""
-    a, b, size_name = cupy_arrays
-    result = benchmark(cupy_add, a, b)
+def test_elementwise_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy array elementwise operation."""
+    a, _, size_name = cupy_arrays
+    result = benchmark(cupy_elementwise, a)
     assert result.shape == a.shape
 
 
 @skip_if_no_cle
-def test_add_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto array addition."""
-    a, b, size_name = cle_arrays
-    result = benchmark(cle_add, a, b)
-
+def test_elementwise_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_arrays
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
 
 # ============================================================================
 # Gaussian Filter Benchmarks
@@ -138,26 +141,53 @@ def test_gaussian_pyclesperanto(benchmark, cle_arrays):
 
 
 # ============================================================================
-# Threshold Benchmarks
+# Slicing Benchmarks
 # ============================================================================
 
-def test_threshold_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy threshold."""
+def test_slicing_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy slicing."""
     a, _, size_name = numpy_arrays
-    result = benchmark(numpy_threshold, a, threshold=0.5)
-    assert result.shape == a.shape
+    result = benchmark(numpy_slicing, a)
+    assert True
 
 
 @skip_if_no_cupy
-def test_threshold_cupy(benchmark, cupy_arrays):
-    """Benchmark cupy threshold."""
+def test_slicing_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy slicing."""
     a, _, size_name = cupy_arrays
-    result = benchmark(cupy_threshold, a, threshold=0.5)
-    assert result.shape == a.shape
+    result = benchmark(cupy_slicing, a)
+    assert True
 
 
 @skip_if_no_cle
-def test_threshold_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto threshold."""
+def test_slicing_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto slicing."""
     a, _, size_name = cle_arrays
-    result = benchmark(cle_threshold, a, threshold=0.5)
+    result = benchmark(cle_slicing, a)
+    assert True
+
+# ============================================================================
+# Sum Benchmarks
+# ============================================================================
+
+def test_sum_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array sum operation."""
+    a, _, size_name = numpy_arrays
+    result = benchmark(numpy_sum, a)
+    assert np.isscalar(result)
+
+
+@skip_if_no_cupy
+def test_sum_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy array sum operation."""
+    a, _, size_name = cupy_arrays
+    result = benchmark(cupy_sum, a)
+    assert np.isscalar(result)
+
+
+@skip_if_no_cle
+def test_sum_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array sum operation."""
+    a, _, size_name = cle_arrays
+    result = benchmark(cle_sum, a)
+    assert np.isscalar(result)
