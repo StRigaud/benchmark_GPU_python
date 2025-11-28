@@ -233,7 +233,7 @@ def main():
     )
     parser.add_argument(
         "--input", "-i",
-        default=".benchmarks",
+        default=".",
         help="Path to benchmark results directory or JSON file"
     )
     parser.add_argument(

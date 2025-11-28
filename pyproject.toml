@@ -28,9 +28,19 @@ dependencies = [
     "pytest-benchmark>=4.0",
     "matplotlib>=3.7",
     "pandas>=2.0",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+cp = [
+    "cupy>=12.0",
+]
+cle = [
+    "pyclesperanto>=0.12",
+]
+all = [
     "cupy>=12.0",
     "pyclesperanto>=0.12",
-    "scipy>=1.10",
 ]
 
 [project.scripts]

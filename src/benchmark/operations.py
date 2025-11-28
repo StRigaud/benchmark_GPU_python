@@ -32,6 +32,11 @@ def numpy_sum(data: np.ndarray) -> float:
     return np.sum(data)
 
 
+def numpy_matmul(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Matrix multiplication using NumPy."""
+    return np.matmul(a, b)
+
+
 # ============================================================================
 # CuPy Operations
 # ============================================================================
@@ -46,9 +51,9 @@ def cupy_elementwise(a):
 
 def cupy_gaussian(data, sigma: float = 1.0):
     """Apply Gaussian filter using CuPy."""
+    import cupy as cp
     import cupyx.scipy.ndimage as cpndi
     result = cpndi.gaussian_filter(data, sigma=sigma)
-    import cupy as cp
     cp.cuda.Stream.null.synchronize()
     return result
 
@@ -64,6 +69,14 @@ def cupy_sum(data):
     """Compute sum using CuPy."""
     import cupy as cp
     result = cp.sum(data)
+    cp.cuda.Stream.null.synchronize()
+    return result
+
+
+def cupy_matmul(a, b):
+    """Matrix multiplication using CuPy."""
+    import cupy as cp
+    result = cp.matmul(a, b)
     cp.cuda.Stream.null.synchronize()
     return result
 
@@ -97,3 +110,10 @@ def cle_sum(data):
     import pyclesperanto as cle
     cle.set_wait_for_kernel_finish(True)
     return cle.sum_of_all_pixels(data)
+
+
+def cle_matmul(a, b):
+    """Matrix multiplication using pyclesperanto."""
+    import pyclesperanto as cle
+    cle.set_wait_for_kernel_finish(True)
+    return cle.multiply_matrix(a, b)

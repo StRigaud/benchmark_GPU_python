@@ -14,14 +14,17 @@ from benchmark.operations import (
     numpy_gaussian,
     numpy_slicing,
     numpy_sum,
+    numpy_matmul,
     cupy_elementwise,
     cupy_gaussian,
     cupy_slicing,
     cupy_sum,
+    cupy_matmul,
     cle_elementwise,
     cle_gaussian,
     cle_slicing,
     cle_sum,
+    cle_matmul,
 )
 
 # Check which backends are available
@@ -29,9 +32,9 @@ BACKENDS = check_backend_availability()
 
 # Define test array sizes
 SIZES = {
-    "small": (256, 256, 256),
-    "medium": (512, 512, 512),
-    # "large": (1024, 1024, 1024),
+    "64MB": (256, 256, 256),
+    "512MB": (512, 512, 512),
+    "4096MB": (1024, 1024, 1024),
 }
 
 
@@ -263,3 +266,45 @@ def test_sum_pyclesperanto(benchmark, cle_arrays):
     })
     result = benchmark(cle_sum, a)
     assert np.isscalar(result)
+
+# ============================================================================
+# Matmul Benchmarks
+# ============================================================================
+
+def test_matmul_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy matrix multiplication."""
+    a, b, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'matmul'
+    })
+    result = benchmark(numpy_matmul, a, b)
+    assert result.shape == a.shape 
+
+@skip_if_no_cupy
+def test_matmul_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy matrix multiplication."""
+    a, b, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'matmul'
+    })
+    result = benchmark(cupy_matmul, a, b)
+    assert result.shape == a.shape
+
+@skip_if_no_cle
+def test_matmul_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto matrix multiplication."""
+    a, b, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'matmul'
+    })
+    result = benchmark(cle_matmul, a, b)
+    assert result.shape == a.shape

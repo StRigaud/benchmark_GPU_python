@@ -10,6 +10,7 @@ from benchmark.operations import (
     numpy_gaussian,
     numpy_slicing,
     numpy_sum,
+    numpy_matmul,
 )
 from benchmark.utils import check_backend_availability
 
@@ -20,5 +21,6 @@ __all__ = [
     "numpy_gaussian",
     "numpy_slicing",
     "numpy_sum",
+    "numpy_matmul",
     "check_backend_availability",
 ]
