@@ -9,6 +9,7 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 test = "pytest tests/ -v"
 benchmark = "pytest tests/test_benchmarks.py -v --benchmark-only"
 charts = "python -m benchmark.charts"
+install = "pip install -e ."
 
 [dependencies]
 python = ">=3.10"
@@ -17,11 +18,15 @@ pytest = ">=7.0"
 pytest-benchmark = ">=4.0"
 matplotlib = ">=3.7"
 pandas = ">=2.0"
+# pyclesperanto = ">=0.12"
+pip = ">=25.3,<26"
+scipy = ">=1.16.3,<2"
 
-[feature.gpu.dependencies]
+[target.linux-64.dependencies]
 cupy = ">=12.0"
-pyclesperanto = ">=0.12"
 
-[environments]
-default = { features = [], solve-group = "default" }
-gpu = { features = ["gpu"], solve-group = "default" }
+[target.win-64.dependencies]
+cupy = ">=12.0"
+
+[pypi-dependencies]
+pyclesperanto = "*"
