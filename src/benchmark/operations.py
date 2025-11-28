@@ -70,7 +70,11 @@ def cle_add(a, b):
 def cle_gaussian(data, sigma: float = 1.0):
     """Apply Gaussian filter using pyclesperanto."""
     import pyclesperanto as cle
-    return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=sigma)
+    # Only apply sigma to x and y dimensions for 2D data
+    if len(data.shape) == 2:
+        return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=0)
+    else:
+        return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=sigma)
 
 
 def cle_threshold(data, threshold: float = 0.5):
