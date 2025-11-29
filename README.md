@@ -1,6 +1,6 @@
 # benchmark_GPU_python
 
-A minimalist Python library for benchmarking some GPU operations and comparing CPU (numpy/scipy) vs cupy vs pyclesperanto.
+A simple, non‑exhaustive toolkit for benchmarking basic operations on GPU vs CPU. It compares GPU libraries (pyclesperanto, CuPy) with CPU libraries (NumPy, SciPy).
 
 ## Installation
 
