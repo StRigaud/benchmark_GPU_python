@@ -37,6 +37,16 @@ def numpy_matmul(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.matmul(a, b)
 
 
+def numpy_std(data: np.ndarray) -> float:
+    """Compute standard deviation using NumPy."""
+    return np.std(data)
+
+
+def numpy_fft(data: np.ndarray) -> np.ndarray:
+    """Compute FFT using NumPy."""
+    return np.fft.fftn(data)
+
+
 # ============================================================================
 # CuPy Operations
 # ============================================================================
@@ -81,6 +91,22 @@ def cupy_matmul(a, b):
     return result
 
 
+def cupy_std(data):
+    """Compute standard deviation using CuPy."""
+    import cupy as cp
+    result = cp.std(data)
+    cp.cuda.Stream.null.synchronize()
+    return result
+
+
+def cupy_fft(data):
+    """Compute FFT using CuPy."""
+    import cupy as cp
+    result = cp.fft.fftn(data)
+    cp.cuda.Stream.null.synchronize()
+    return result
+
+
 # ============================================================================
 # pyclesperanto Operations
 # ============================================================================
@@ -117,3 +143,17 @@ def cle_matmul(a, b):
     import pyclesperanto as cle
     cle.set_wait_for_kernel_finish(True)
     return cle.multiply_matrix(a, b)
+
+
+def cle_std(data):
+    """Compute standard deviation using pyclesperanto."""
+    import pyclesperanto as cle
+    cle.set_wait_for_kernel_finish(True)
+    return cle.standard_deviation_of_all_pixels(data)
+
+
+def cle_fft(data):
+    """Compute FFT using pyclesperanto."""
+    import pyclesperanto as cle
+    cle.set_wait_for_kernel_finish(True)
+    return cle.fft(data)

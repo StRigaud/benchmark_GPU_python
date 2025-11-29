@@ -15,16 +15,22 @@ from benchmark.operations import (
     numpy_slicing,
     numpy_sum,
     numpy_matmul,
+    numpy_std,
+    numpy_fft,
     cupy_elementwise,
     cupy_gaussian,
     cupy_slicing,
     cupy_sum,
     cupy_matmul,
+    cupy_std,
+    cupy_fft,
     cle_elementwise,
     cle_gaussian,
     cle_slicing,
     cle_sum,
     cle_matmul,
+    cle_std,
+    cle_fft,
 )
 
 # Check which backends are available
@@ -307,4 +313,92 @@ def test_matmul_pyclesperanto(benchmark, cle_arrays):
         'operation': 'matmul'
     })
     result = benchmark(cle_matmul, a, b)
+    assert result.shape == a.shape
+
+# ============================================================================
+# Standard Deviation Benchmarks
+# ============================================================================
+
+def test_std_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array standard deviation operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'std'
+    })
+    result = benchmark(numpy_std, a)
+    assert np.isscalar(result)
+
+
+@skip_if_no_cupy
+def test_std_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy array standard deviation operation."""
+    a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'std'
+    })
+    result = benchmark(cupy_std, a)
+    assert np.isscalar(result)
+
+
+@skip_if_no_cle
+def test_std_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array standard deviation operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'std'
+    })
+    result = benchmark(cle_std, a)
+    assert np.isscalar(result)
+
+# ============================================================================
+# FFT Benchmarks
+# ============================================================================
+
+def test_fft_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy FFT operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'fft'
+    })
+    result = benchmark(numpy_fft, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cupy
+def test_fft_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy FFT operation."""
+    a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'fft'
+    })
+    result = benchmark(cupy_fft, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_fft_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto FFT operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'fft'
+    })
+    result = benchmark(cle_fft, a)
     assert result.shape == a.shape
