@@ -37,7 +37,7 @@ The library benchmarks the following operations:
 | Operation | Description |
 |-----------|-------------|
 | `elementwise` | Scalar operation on all elements of the array |
-| `gaussian` | Convolution operation with a Gaussian kernel |
+| `gaussian` | Convolution operation with a Gaussian kernel (𝜎=3) |
 | `slicing` | Select every third element of first dimension |
 | `sum` | Compute sum of entire array, reducing it to a single scalar |
 | `std` | Compute std of entire array, reducing it to a single scalar |

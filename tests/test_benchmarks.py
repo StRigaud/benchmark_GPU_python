@@ -154,7 +154,7 @@ def test_gaussian_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'gaussian'
     })
-    result = benchmark(numpy_gaussian, a, sigma=2.0)
+    result = benchmark(numpy_gaussian, a, sigma=3.0)
     assert result.shape == a.shape
 
 
@@ -168,7 +168,7 @@ def test_gaussian_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'gaussian'
     })
-    result = benchmark(cupy_gaussian, a, sigma=2.0)
+    result = benchmark(cupy_gaussian, a, sigma=3.0)
     assert result.shape == a.shape
 
 
@@ -182,7 +182,7 @@ def test_gaussian_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'gaussian'
     })
-    result = benchmark(cle_gaussian, a, sigma=2.0)
+    result = benchmark(cle_gaussian, a, sigma=3.0)
 
 
 # ============================================================================
