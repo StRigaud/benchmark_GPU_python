@@ -89,38 +89,50 @@ def create_comparison_chart(
                 continue
             
             means = []
-            stds = []
             for operation in operations:
                 op_data = backend_data[backend_data["operation"] == operation]
                 if not op_data.empty:
                     means.append(op_data["mean"].values[0] * 1000)  # Convert to ms
-                    stds.append(op_data["stddev"].values[0] * 1000)
                 else:
                     # Use NaN for missing values to avoid issues with log scale
                     means.append(float('nan'))
-                    stds.append(0)
             
             offset = (i - len(backends) / 2 + 0.5) * width
             color = colors.get(backend, f"C{i}")
-            ax.bar(
+            bars = ax.bar(
                 [x + offset for x in x_positions],
                 means,
                 width,
-                yerr=stds,
                 label=backend,
                 color=color,
-                capsize=3
             )
+            # Annotate values on top of bars in matching color
+            for bar in bars:
+                height = bar.get_height()
+                if height and not pd.isna(height) and height > 0:
+                    # Small offset (5%) to sit above the bar; works with log scale
+                    offset_y = height * 0.05
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        height + offset_y,
+                        f"{height:.2f}",
+                        ha="center",
+                        va="bottom",
+                        color=bar.get_facecolor(),
+                        fontsize=9
+                    )
         
         ax.set_xlabel("Operation")
         ax.set_ylabel("Time (ms)")
         # Use log scale for readability across wide performance ranges
         ax.set_yscale("log")
-        ax.set_title(f"{title} - Size: {size}")
+        ax.set_title(f"{title} - Size: {size} - Time in ms (log scale)")
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
         ax.legend(frameon=False)
-        ax.grid(axis="y", alpha=0.3)
+        # Remove Y axis (ticks, label, and grid) for cleaner look
+        ax.yaxis.set_visible(False)
+        ax.grid(False)
         # Make plots spineless for a cleaner visual
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
@@ -154,6 +166,7 @@ def create_speedup_chart(
     # Get unique sizes, operations, and backends
     sizes = sorted(df["size"].unique())
     operations = sorted(df["operation"].unique())
+    # Plot only non-baseline backends; keep baseline as reference line
     backends = [b for b in sorted(df["backend"].unique()) if b != baseline]
     
     # Color mapping for backends
@@ -166,7 +179,7 @@ def create_speedup_chart(
         if size_data.empty:
             continue
         
-        # Calculate speedups
+        # Calculate speedups relative to baseline (baseline = 0)
         speedup_data = []
         for operation in operations:
             baseline_data = size_data[(size_data["operation"] == operation) & 
@@ -174,16 +187,17 @@ def create_speedup_chart(
             if baseline_data.empty:
                 continue
             baseline_time = baseline_data["mean"].values[0]
-            
+            # Other backends: speedup minus 1 (relative to baseline)
             for backend in backends:
                 backend_data = size_data[(size_data["operation"] == operation) & 
                                          (size_data["backend"] == backend)]
                 if not backend_data.empty:
-                    speedup = baseline_time / backend_data["mean"].values[0]
+                    raw_speedup = baseline_time / backend_data["mean"].values[0]
+                    rel_speedup = raw_speedup - 1.0
                     speedup_data.append({
                         "operation": operation,
                         "backend": backend,
-                        "speedup": speedup
+                        "speedup": rel_speedup
                     })
         
         if not speedup_data:
@@ -205,22 +219,46 @@ def create_speedup_chart(
                 if not data.empty:
                     backend_speedups.append(data["speedup"].values[0])
                 else:
-                    backend_speedups.append(0)
+                    backend_speedups.append(float('nan'))
             
             offset = (i - len(backends) / 2 + 0.5) * width
             color = colors.get(backend, f"C{i}")
-            ax.bar([x + offset for x in x_positions], backend_speedups, width,
-                   label=backend, color=color)
+            bars = ax.bar([x + offset for x in x_positions], backend_speedups, width,
+                          label=backend, color=color)
+            # Annotate speedup values; place below if negative
+            for bar in bars:
+                height = bar.get_height()
+                if height and not pd.isna(height):
+                    offset_y = (abs(height) + 1e-6) * 0.03
+                    x = bar.get_x() + bar.get_width() / 2
+                    if height >= 0:
+                        y = height + offset_y
+                        va = "bottom"
+                    else:
+                        y = height - offset_y
+                        va = "top"
+                    ax.text(
+                        x,
+                        y,
+                        f"{height:+.2f}x",
+                        ha="center",
+                        va=va,
+                        color=bar.get_facecolor(),
+                        fontsize=9
+                    ) 
         
-        ax.axhline(y=1, color="gray", linestyle="--", alpha=0.7, 
+        # Baseline at 0
+        ax.axhline(y=0, color="gray", linestyle="--", alpha=0.7, 
                    label=f"{baseline} baseline")
         ax.set_xlabel("Operation")
-        ax.set_ylabel(f"Speedup vs {baseline}")
+        ax.set_ylabel(f"Relative Speedup vs {baseline} (x - 1)")
         ax.set_title(f"GPU Speedup Comparison - Size: {size}")
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
         ax.legend(frameon=False)
-        ax.grid(axis="y", alpha=0.3)
+        # Remove Y axis (ticks, label, and grid) for cleaner look
+        ax.yaxis.set_visible(False)
+        ax.grid(False)
         # Make plots spineless for a cleaner visual
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
