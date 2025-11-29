@@ -1,13 +1,6 @@
 # benchmark_GPU_python
 
-A minimalist Python library for benchmarking GPU operations comparing numpy, cupy, and pyclesperanto.
-
-## Features
-
-- **pytest-based benchmarks**: Uses pytest-benchmark for reliable performance measurements
-- **Multiple backends**: Compare numpy (CPU), cupy (CUDA GPU), and pyclesperanto (OpenCL GPU)
-- **Chart generation**: Automatically generate comparison charts from benchmark results
-- **pixi-based**: Easy installation and environment management with pixi
+A minimalist Python library for benchmarking some GPU operations and comparing CPU (numpy/scipy) vs cupy vs pyclesperanto.
 
 ## Installation
 
@@ -27,51 +20,14 @@ Clone the repository and install dependencies:
 git clone https://github.com/StRigaud/benchmark_GPU_python.git
 cd benchmark_GPU_python
 pixi install
-```
-
-For GPU support (cupy and pyclesperanto):
-
-```bash
-pixi install -e gpu
+pixi run install
 ```
 
 ## Usage
 
-### Running Benchmarks
-
-Run all benchmarks:
-
 ```bash
-pixi run test
-```
-
-Run benchmarks with detailed output:
-
-```bash
-pixi run benchmark
-```
-
-Save benchmark results to JSON for chart generation:
-
-```bash
-pixi run pytest tests/test_benchmarks.py --benchmark-json=results.json
-```
-
-### Generating Charts
-
-After running benchmarks with JSON output:
-
-```bash
-pixi run charts --input results.json --output ./charts
-```
-
-Or programmatically:
-
-```python
-from benchmark.charts import load_benchmark_results, create_comparison_chart
-
-df = load_benchmark_results("results.json")
-create_comparison_chart(df, output_path="comparison.png")
+pixi run benchmark  # Running benchmarking
+pixi run charts    # Generate graphics from benchmarks
 ```
 
 ## Benchmark Operations
@@ -80,9 +36,13 @@ The library benchmarks the following operations:
 
 | Operation | Description |
 |-----------|-------------|
-| `add` | Element-wise array addition |
-| `gaussian` | Gaussian blur filter |
-| `threshold` | Binary thresholding |
+| `elementwise` | Scalar operation on all elements of the array |
+| `gaussian` | Convolution operation with a Gaussian kernel |
+| `slicing` | Select every third element of first dimension |
+| `sum` | Compute sum of entire array, reducing it to a single scalar |
+| `std` | Compute std of entire array, reducing it to a single scalar |
+| `matmul` | Multiplication of two square matrices |
+| `fft` | Fast Fourier Transform of matrix |
 
 ## Project Structure
 
@@ -108,11 +68,9 @@ benchmark_GPU_python/
 2. Add corresponding benchmark tests in `tests/test_benchmarks.py`
 3. Run the benchmarks to verify
 
-### Running Tests
+### Incompatibilities
 
-```bash
-pixi run test
-```
+This code used `cupy` which is restricted to NVIDIA hardware. 
 
 ## License
 
