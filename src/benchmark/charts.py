@@ -96,7 +96,8 @@ def create_comparison_chart(
                     means.append(op_data["mean"].values[0] * 1000)  # Convert to ms
                     stds.append(op_data["stddev"].values[0] * 1000)
                 else:
-                    means.append(0)
+                    # Use NaN for missing values to avoid issues with log scale
+                    means.append(float('nan'))
                     stds.append(0)
             
             offset = (i - len(backends) / 2 + 0.5) * width
@@ -113,11 +114,18 @@ def create_comparison_chart(
         
         ax.set_xlabel("Operation")
         ax.set_ylabel("Time (ms)")
+        # Use log scale for readability across wide performance ranges
+        ax.set_yscale("log")
         ax.set_title(f"{title} - Size: {size}")
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
-        ax.legend()
+        ax.legend(frameon=False)
         ax.grid(axis="y", alpha=0.3)
+        # Make plots spineless for a cleaner visual
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["bottom"].set_visible(False)
         
         # Save chart with size in filename
         base_path = Path(output_path)
@@ -211,8 +219,13 @@ def create_speedup_chart(
         ax.set_title(f"GPU Speedup Comparison - Size: {size}")
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
-        ax.legend()
+        ax.legend(frameon=False)
         ax.grid(axis="y", alpha=0.3)
+        # Make plots spineless for a cleaner visual
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_visible(False)
+        ax.spines["bottom"].set_visible(False)
         
         # Save chart with size in filename
         base_path = Path(output_path)
