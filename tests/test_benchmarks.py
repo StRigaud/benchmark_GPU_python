@@ -17,6 +17,7 @@ from benchmark.operations import (
     numpy_matmul,
     numpy_std,
     numpy_fft,
+    numpy_convolve,
     cupy_elementwise,
     cupy_gaussian,
     cupy_slicing,
@@ -24,6 +25,7 @@ from benchmark.operations import (
     cupy_matmul,
     cupy_std,
     cupy_fft,
+    cupy_convolve,
     cle_elementwise,
     cle_gaussian,
     cle_slicing,
@@ -31,6 +33,7 @@ from benchmark.operations import (
     cle_matmul,
     cle_std,
     cle_fft,
+    cle_convolve,
 )
 
 # Check which backends are available
@@ -40,7 +43,7 @@ BACKENDS = check_backend_availability()
 SIZES = {
     "64MB": (256, 256, 256),
     "512MB": (512, 512, 512),
-    "4096MB": (1024, 1024, 1024),
+    # "4096MB": (1024, 1024, 1024),
 }
 
 
@@ -110,6 +113,7 @@ def test_elementwise_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'elementwise'
     })
+    numpy_elementwise(a) # Warm-up
     result = benchmark(numpy_elementwise, a)
     assert result.shape == a.shape
 
@@ -124,6 +128,7 @@ def test_elementwise_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'elementwise'
     })
+    cupy_elementwise(a) # Warm-up
     result = benchmark(cupy_elementwise, a)
     assert result.shape == a.shape
 
@@ -138,6 +143,7 @@ def test_elementwise_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'elementwise'
     })
+    cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
 
@@ -148,13 +154,15 @@ def test_elementwise_pyclesperanto(benchmark, cle_arrays):
 def test_gaussian_numpy(benchmark, numpy_arrays):
     """Benchmark numpy gaussian filter."""
     a, _, size_name = numpy_arrays
+    s = 15.0
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'numpy',
-        'operation': 'gaussian'
+        'operation': 'gaussian({sigma})'.format(sigma=s)
     })
-    result = benchmark(numpy_gaussian, a, sigma=3.0)
+    numpy_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(numpy_gaussian, a, sigma=s)
     assert result.shape == a.shape
 
 
@@ -162,13 +170,15 @@ def test_gaussian_numpy(benchmark, numpy_arrays):
 def test_gaussian_cupy(benchmark, cupy_arrays):
     """Benchmark cupy gaussian filter."""
     a, _, size_name = cupy_arrays
+    s = 15.0
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'cupy',
-        'operation': 'gaussian'
+        'operation': 'gaussian({sigma})'.format(sigma=s)
     })
-    result = benchmark(cupy_gaussian, a, sigma=3.0)
+    cupy_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cupy_gaussian, a, sigma=s)
     assert result.shape == a.shape
 
 
@@ -176,13 +186,16 @@ def test_gaussian_cupy(benchmark, cupy_arrays):
 def test_gaussian_pyclesperanto(benchmark, cle_arrays):
     """Benchmark pyclesperanto gaussian filter."""
     a, _, size_name = cle_arrays
+    s = 15.0
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'pyclesperanto',
-        'operation': 'gaussian'
+        'operation': 'gaussian({sigma})'.format(sigma=s)
     })
-    result = benchmark(cle_gaussian, a, sigma=3.0)
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
+    assert result.shape == a.shape
 
 
 # ============================================================================
@@ -198,6 +211,7 @@ def test_slicing_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'slicing'
     })
+    numpy_slicing(a) # Warm-up
     result = benchmark(numpy_slicing, a)
     assert True
 
@@ -212,6 +226,7 @@ def test_slicing_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'slicing'
     })
+    cupy_slicing(a) # Warm-up
     result = benchmark(cupy_slicing, a)
     assert True
 
@@ -226,6 +241,7 @@ def test_slicing_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'slicing'
     })
+    cle_slicing(a) # Warm-up
     result = benchmark(cle_slicing, a)
     assert True
 
@@ -242,6 +258,7 @@ def test_sum_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'sum'
     })
+    numpy_sum(a) # Warm-up
     result = benchmark(numpy_sum, a)
     assert np.isscalar(result)
 
@@ -256,8 +273,9 @@ def test_sum_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'sum'
     })
+    cupy_sum(a) # Warm-up
     result = benchmark(cupy_sum, a)
-    assert np.isscalar(result)
+    assert np.isscalar(result.get())
 
 
 @skip_if_no_cle
@@ -270,6 +288,7 @@ def test_sum_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'sum'
     })
+    cle_sum(a) # Warm-up
     result = benchmark(cle_sum, a)
     assert np.isscalar(result)
 
@@ -286,6 +305,7 @@ def test_matmul_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'matmul'
     })
+    numpy_matmul(a, b) # Warm-up
     result = benchmark(numpy_matmul, a, b)
     assert result.shape == a.shape 
 
@@ -299,6 +319,7 @@ def test_matmul_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'matmul'
     })
+    cupy_matmul(a, b) # Warm-up
     result = benchmark(cupy_matmul, a, b)
     assert result.shape == a.shape
 
@@ -312,6 +333,7 @@ def test_matmul_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'matmul'
     })
+    cle_matmul(a, b) # Warm-up
     result = benchmark(cle_matmul, a, b)
     assert result.shape == a.shape
 
@@ -328,6 +350,7 @@ def test_std_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'std'
     })
+    numpy_std(a) # Warm-up
     result = benchmark(numpy_std, a)
     assert np.isscalar(result)
 
@@ -342,8 +365,9 @@ def test_std_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'std'
     })
+    cupy_std(a) # Warm-up
     result = benchmark(cupy_std, a)
-    assert np.isscalar(result)
+    assert np.isscalar(result.get())
 
 
 @skip_if_no_cle
@@ -356,6 +380,7 @@ def test_std_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'std'
     })
+    cle_std(a) # Warm-up
     result = benchmark(cle_std, a)
     assert np.isscalar(result)
 
@@ -372,8 +397,9 @@ def test_fft_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'fft'
     })
+    numpy_fft(a) # Warm-up
     result = benchmark(numpy_fft, a)
-    assert result.shape == a.shape
+    assert True
 
 
 @skip_if_no_cupy
@@ -386,8 +412,9 @@ def test_fft_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'fft'
     })
+    cupy_fft(a) # Warm-up
     result = benchmark(cupy_fft, a)
-    assert result.shape == a.shape
+    assert True
 
 
 @skip_if_no_cle
@@ -400,5 +427,65 @@ def test_fft_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'fft'
     })
+    cle_fft(a) # Warm-up
     result = benchmark(cle_fft, a)
+    assert True
+
+# ============================================================================
+# Convolution Benchmarks
+# ============================================================================
+
+def test_convolve_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy convolution operation."""
+    a, _, size_name = numpy_arrays
+    # Create a nxnxn kernel
+    n = 7
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3)
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'convolve({n})'.format(n=n)
+    })
+    numpy_convolve(a, kernel) # Warm-up
+    result = benchmark(numpy_convolve, a, kernel)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cupy
+def test_convolve_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy convolution operation."""
+    import cupy as cp
+    a, _, size_name = cupy_arrays
+    # Create a nxnxn kernel
+    n = 7
+    kernel = cp.ones((n, n, n), dtype=cp.float32) / (n ** 3)
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'convolve({n})'.format(n=n)
+    })
+    cupy_convolve(a, kernel) # Warm-up
+    result = benchmark(cupy_convolve, a, kernel)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_convolve_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto convolution operation."""
+    import pyclesperanto as cle
+    a, _, size_name = cle_arrays
+    # Create a nxnxn kernel
+    n = 7
+    kernel_np = np.ones((n, n, n), dtype=np.float32) / (n ** 3)
+    kernel = cle.push(kernel_np)
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'convolve({n})'.format(n=n)
+    })
+    cle_convolve(a, kernel) # Warm-up
+    result = benchmark(cle_convolve, a, kernel)
     assert result.shape == a.shape

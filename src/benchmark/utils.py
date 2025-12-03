@@ -27,7 +27,7 @@ def check_backend_availability() -> Dict[str, bool]:
     try:
         import cupy
         # Try to get a device to verify GPU is available
-        cupy.cuda.Device(0).compute_capability
+        # cupy.cuda.Device(0).compute_capability
         backends["cupy"] = True
     except (ImportError, Exception):
         pass

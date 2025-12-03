@@ -22,26 +22,16 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = [
-    "numpy>=1.24",
-    "pytest>=7.0",
-    "pytest-benchmark>=4.0",
-    "matplotlib>=3.7",
-    "pandas>=2.0",
-    "scipy>=1.10",
-]
-
-[project.optional-dependencies]
-cp = [
-    "cupy>=12.0",
-]
-cle = [
-    "pyclesperanto>=0.12",
-]
-all = [
-    "cupy>=12.0",
-    "pyclesperanto>=0.12",
-]
+# dependencies = [
+#     "numpy>=2.3.0",
+#     "pytest>=9.0",
+#     "pytest-benchmark>=5.2.3",
+#     "matplotlib>=3.10",
+#     "pandas>=2.3.3",
+#     "scipy>=1.16.3",
+#     "cupy>=13.6",
+#     "pyclesperanto>=0.19",
+# ]
 
 [project.scripts]
 benchmark-charts = "benchmark.charts:main"
