@@ -240,7 +240,7 @@ def create_speedup_chart(
                     ax.text(
                         x,
                         y,
-                        f"{height:+.2f}x",
+                        f"{height:.2f}",
                         ha="center",
                         va=va,
                         color=bar.get_facecolor(),
@@ -299,7 +299,7 @@ def main():
     input_path = Path(args.input)
     if input_path.is_dir():
         # Find most recent benchmark JSON
-        json_files = list(input_path.rglob("*.json"))
+        json_files = list(input_path.rglob("benchmark_results.json"))
         if not json_files:
             print(f"No benchmark JSON files found in {input_path}")
             return
