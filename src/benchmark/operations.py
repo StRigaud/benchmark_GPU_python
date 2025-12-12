@@ -137,15 +137,15 @@ def cle_elementwise(a):
     """Add two arrays using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
-    return cle.sin(a) ** 2 + cle.cos(a) ** 2
+    cle.wait_for_kernel_to_finish(True)
+    return cle.power(cle.sin(a), scalar=2) + cle.power(cle.cos(a), scalar=2)
 
 
 def cle_gaussian(data, sigma: float = 1.0):
     """Apply Gaussian filter using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=sigma)
 
 
@@ -153,14 +153,15 @@ def cle_slicing(data):
     """Apply threshold using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return data[::3]
+
 
 def cle_sum(data):
     """Compute sum using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return cle.sum_of_all_pixels(data)
 
 
@@ -168,7 +169,7 @@ def cle_matmul(a, b):
     """Matrix multiplication using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return cle.multiply_matrix(a, b)
 
 
@@ -176,7 +177,7 @@ def cle_std(data):
     """Compute standard deviation using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return cle.standard_deviation_of_all_pixels(data)
 
 
@@ -184,7 +185,7 @@ def cle_fft(data):
     """Compute FFT using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return cle.fft(data)
 
 
@@ -192,5 +193,5 @@ def cle_convolve(data, kernel):
     """Apply convolution using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
-    cle.set_wait_for_kernel_finish(True)
+    cle.wait_for_kernel_to_finish(True)
     return cle.convolve(data, kernel)

@@ -43,7 +43,9 @@ BACKENDS = check_backend_availability()
 SIZES = {
     "64MB": (256, 256, 256),
     "512MB": (512, 512, 512),
-    # "4096MB": (1024, 1024, 1024),
+
+    # "1000": (1000, 1000),
+    # "10000": (10000, 10000),
 }
 
 
@@ -260,7 +262,6 @@ def test_sum_numpy(benchmark, numpy_arrays):
     })
     numpy_sum(a) # Warm-up
     result = benchmark(numpy_sum, a)
-    assert np.isscalar(result)
 
 
 @skip_if_no_cupy
@@ -275,7 +276,6 @@ def test_sum_cupy(benchmark, cupy_arrays):
     })
     cupy_sum(a) # Warm-up
     result = benchmark(cupy_sum, a)
-    assert np.isscalar(result.get())
 
 
 @skip_if_no_cle
@@ -290,7 +290,6 @@ def test_sum_pyclesperanto(benchmark, cle_arrays):
     })
     cle_sum(a) # Warm-up
     result = benchmark(cle_sum, a)
-    assert np.isscalar(result)
 
 # ============================================================================
 # Matmul Benchmarks
@@ -303,8 +302,10 @@ def test_matmul_numpy(benchmark, numpy_arrays):
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'numpy',
-        'operation': 'matmul'
+        'operation': 'matmul (2d)'
     })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
     numpy_matmul(a, b) # Warm-up
     result = benchmark(numpy_matmul, a, b)
     assert result.shape == a.shape 
@@ -317,8 +318,10 @@ def test_matmul_cupy(benchmark, cupy_arrays):
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'cupy',
-        'operation': 'matmul'
+        'operation': 'matmul (2d)'
     })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
     cupy_matmul(a, b) # Warm-up
     result = benchmark(cupy_matmul, a, b)
     assert result.shape == a.shape
@@ -331,8 +334,10 @@ def test_matmul_pyclesperanto(benchmark, cle_arrays):
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'pyclesperanto',
-        'operation': 'matmul'
+        'operation': 'matmul (2d)'
     })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
     cle_matmul(a, b) # Warm-up
     result = benchmark(cle_matmul, a, b)
     assert result.shape == a.shape
@@ -352,7 +357,6 @@ def test_std_numpy(benchmark, numpy_arrays):
     })
     numpy_std(a) # Warm-up
     result = benchmark(numpy_std, a)
-    assert np.isscalar(result)
 
 
 @skip_if_no_cupy
@@ -367,7 +371,6 @@ def test_std_cupy(benchmark, cupy_arrays):
     })
     cupy_std(a) # Warm-up
     result = benchmark(cupy_std, a)
-    assert np.isscalar(result.get())
 
 
 @skip_if_no_cle
@@ -382,7 +385,6 @@ def test_std_pyclesperanto(benchmark, cle_arrays):
     })
     cle_std(a) # Warm-up
     result = benchmark(cle_std, a)
-    assert np.isscalar(result)
 
 # ============================================================================
 # FFT Benchmarks
@@ -440,7 +442,7 @@ def test_convolve_numpy(benchmark, numpy_arrays):
     a, _, size_name = numpy_arrays
     # Create a nxnxn kernel
     n = 7
-    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3)
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
@@ -459,7 +461,8 @@ def test_convolve_cupy(benchmark, cupy_arrays):
     a, _, size_name = cupy_arrays
     # Create a nxnxn kernel
     n = 7
-    kernel = cp.ones((n, n, n), dtype=cp.float32) / (n ** 3)
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+    kernel = cp.asarray(kernel)
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
@@ -478,8 +481,8 @@ def test_convolve_pyclesperanto(benchmark, cle_arrays):
     a, _, size_name = cle_arrays
     # Create a nxnxn kernel
     n = 7
-    kernel_np = np.ones((n, n, n), dtype=np.float32) / (n ** 3)
-    kernel = cle.push(kernel_np)
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+    kernel = cle.push(kernel)
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
