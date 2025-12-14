@@ -7,6 +7,7 @@ for common image processing operations.
 
 from benchmark.operations import (
     numpy_elementwise,
+    numpy_elementwise_simple,
     numpy_gaussian,
     numpy_slicing,
     numpy_sum,
@@ -20,6 +21,7 @@ __version__ = "0.1.0"
 
 __all__ = [
     "numpy_elementwise",
+    "numpy_elementwise_simple",
     "numpy_gaussian",
     "numpy_slicing",
     "numpy_sum",

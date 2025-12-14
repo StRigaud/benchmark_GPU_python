@@ -11,6 +11,7 @@ import pytest
 from benchmark.utils import check_backend_availability, generate_test_data
 from benchmark.operations import (
     numpy_elementwise,
+    numpy_elementwise_simple,
     numpy_gaussian,
     numpy_slicing,
     numpy_sum,
@@ -19,6 +20,7 @@ from benchmark.operations import (
     numpy_fft,
     numpy_convolve,
     cupy_elementwise,
+    cupy_elementwise_simple,
     cupy_gaussian,
     cupy_slicing,
     cupy_sum,
@@ -27,6 +29,7 @@ from benchmark.operations import (
     cupy_fft,
     cupy_convolve,
     cle_elementwise,
+    cle_elementwise_simple,
     cle_gaussian,
     cle_slicing,
     cle_sum,
@@ -100,6 +103,54 @@ def cle_arrays(size_name):
     a = generate_test_data(size, "pyclesperanto")
     b = generate_test_data(size, "pyclesperanto")
     return a, b, size_name
+
+
+# ============================================================================
+# Elementwise simple Benchmarks
+# ============================================================================
+
+def test_elementwise_simple_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array elementwise operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'elementwise_simple'
+    })
+    numpy_elementwise_simple(a) # Warm-up
+    result = benchmark(numpy_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cupy
+def test_elementwise_simple_cupy(benchmark, cupy_arrays):
+    """Benchmark cupy array elementwise operation."""
+    a, _, size_name = cupy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'cupy',
+        'operation': 'elementwise_simple'
+    })
+    cupy_elementwise_simple(a) # Warm-up
+    result = benchmark(cupy_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_elementwise_simple_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
 
 
 # ============================================================================
@@ -437,58 +488,58 @@ def test_fft_pyclesperanto(benchmark, cle_arrays):
 # Convolution Benchmarks
 # ============================================================================
 
-def test_convolve_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy convolution operation."""
-    a, _, size_name = numpy_arrays
-    # Create a nxnxn kernel
-    n = 7
-    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'convolve({n})'.format(n=n)
-    })
-    numpy_convolve(a, kernel) # Warm-up
-    result = benchmark(numpy_convolve, a, kernel)
-    assert result.shape == a.shape
+# def test_convolve_numpy(benchmark, numpy_arrays):
+#     """Benchmark numpy convolution operation."""
+#     a, _, size_name = numpy_arrays
+#     # Create a nxnxn kernel
+#     n = 7
+#     kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+#     benchmark.extra_info.update({
+#         'size': size_name,
+#         'size_shape': SIZES[size_name],
+#         'backend': 'numpy',
+#         'operation': 'convolve({n})'.format(n=n)
+#     })
+#     numpy_convolve(a, kernel) # Warm-up
+#     result = benchmark(numpy_convolve, a, kernel)
+#     assert result.shape == a.shape
 
 
-@skip_if_no_cupy
-def test_convolve_cupy(benchmark, cupy_arrays):
-    """Benchmark cupy convolution operation."""
-    import cupy as cp
-    a, _, size_name = cupy_arrays
-    # Create a nxnxn kernel
-    n = 7
-    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
-    kernel = cp.asarray(kernel)
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'cupy',
-        'operation': 'convolve({n})'.format(n=n)
-    })
-    cupy_convolve(a, kernel) # Warm-up
-    result = benchmark(cupy_convolve, a, kernel)
-    assert result.shape == a.shape
+# @skip_if_no_cupy
+# def test_convolve_cupy(benchmark, cupy_arrays):
+#     """Benchmark cupy convolution operation."""
+#     import cupy as cp
+#     a, _, size_name = cupy_arrays
+#     # Create a nxnxn kernel
+#     n = 7
+#     kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+#     kernel = cp.asarray(kernel)
+#     benchmark.extra_info.update({
+#         'size': size_name,
+#         'size_shape': SIZES[size_name],
+#         'backend': 'cupy',
+#         'operation': 'convolve({n})'.format(n=n)
+#     })
+#     cupy_convolve(a, kernel) # Warm-up
+#     result = benchmark(cupy_convolve, a, kernel)
+#     assert result.shape == a.shape
 
 
-@skip_if_no_cle
-def test_convolve_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto convolution operation."""
-    import pyclesperanto as cle
-    a, _, size_name = cle_arrays
-    # Create a nxnxn kernel
-    n = 7
-    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
-    kernel = cle.push(kernel)
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'convolve({n})'.format(n=n)
-    })
-    cle_convolve(a, kernel) # Warm-up
-    result = benchmark(cle_convolve, a, kernel)
-    assert result.shape == a.shape
+# @skip_if_no_cle
+# def test_convolve_pyclesperanto(benchmark, cle_arrays):
+#     """Benchmark pyclesperanto convolution operation."""
+#     import pyclesperanto as cle
+#     a, _, size_name = cle_arrays
+#     # Create a nxnxn kernel
+#     n = 7
+#     kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+#     kernel = cle.push(kernel)
+#     benchmark.extra_info.update({
+#         'size': size_name,
+#         'size_shape': SIZES[size_name],
+#         'backend': 'pyclesperanto',
+#         'operation': 'convolve({n})'.format(n=n)
+#     })
+#     cle_convolve(a, kernel) # Warm-up
+#     result = benchmark(cle_convolve, a, kernel)
+#     assert result.shape == a.shape

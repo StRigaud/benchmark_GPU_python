@@ -13,6 +13,10 @@ from scipy import ndimage as ndi
 # NumPy Operations
 # ============================================================================
 
+def numpy_elementwise_simple(a: np.ndarray) -> np.ndarray:
+    """Add two arrays using NumPy."""
+    return a ** 2
+
 def numpy_elementwise(a: np.ndarray) -> np.ndarray:
     """Add two arrays using NumPy."""
     return np.sin(a) ** 2 + np.cos(a) ** 2
@@ -55,6 +59,14 @@ def numpy_convolve(data: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 # ============================================================================
 # CuPy Operations
 # ============================================================================
+
+def cupy_elementwise_simple(a):
+    """Add two arrays using CuPy."""
+    import cupy as cp
+    cp.cuda.Device(-1)
+    result = a ** 2
+    cp.cuda.Stream.null.synchronize()  # Ensure GPU computation is complete
+    return result
 
 def cupy_elementwise(a):
     """Add two arrays using CuPy."""
@@ -133,12 +145,40 @@ def cupy_convolve(data, kernel):
 # pyclesperanto Operations
 # ============================================================================
 
+def cle_elementwise_simple(a):
+    """Add two arrays using pyclesperanto."""
+    import pyclesperanto as cle
+    cle.select_device(1, "gpu")
+    cle.wait_for_kernel_to_finish(True)
+    b = cle.create_like(a)
+    cle.power(a, scalar=2, output_image=b)
+    return b
+
 def cle_elementwise(a):
     """Add two arrays using pyclesperanto."""
     import pyclesperanto as cle
     cle.select_device(1, "gpu")
     cle.wait_for_kernel_to_finish(True)
-    return cle.power(cle.sin(a), scalar=2) + cle.power(cle.cos(a), scalar=2)
+    b = cle.create_like(a)
+    source = """
+__constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST;
+__kernel void elementwise( IMAGE_src_TYPE  src, IMAGE_dst_TYPE  dst) {
+    const int x = get_global_id(0);
+    const int y = get_global_id(1);
+    const int z = get_global_id(2);
+    const float a = (float) READ_IMAGE(src, sampler, POS_src_INSTANCE(x, y, z, 0)).x;
+    const float result = pow(sin(a), 2) + pow(cos(a), 2);
+    WRITE_IMAGE(dst, POS_dst_INSTANCE(x, y, z, 0), CONVERT_dst_PIXEL_TYPE(result));
+    }
+    """
+    params = { "src": a, "dst": b }
+    cle.execute( kernel_source=source,
+        kernel_name="elementwise",
+        global_size=a.shape,
+        parameters=params,
+        local_size=(0,0,0))
+    return b
+    # return cle.power(cle.sin(a), scalar=2) + cle.power(cle.cos(a), scalar=2)
 
 
 def cle_gaussian(data, sigma: float = 1.0):

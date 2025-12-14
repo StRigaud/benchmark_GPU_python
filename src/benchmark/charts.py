@@ -119,7 +119,7 @@ def create_comparison_chart(
                         ha="center",
                         va="bottom",
                         color=bar.get_facecolor(),
-                        fontsize=9
+                        fontsize=7
                     )
         
         ax.set_xlabel("Operation")
@@ -244,7 +244,7 @@ def create_speedup_chart(
                         ha="center",
                         va=va,
                         color=bar.get_facecolor(),
-                        fontsize=9
+                        fontsize=7
                     ) 
         
         # Baseline at 0
@@ -268,7 +268,7 @@ def create_speedup_chart(
         # Save chart with size in filename
         base_path = Path(output_path)
         size_output = base_path.parent / f"{base_path.stem}_{size}{base_path.suffix}"
-        plt.tight_layout()
+        # plt.tight_layout()
         plt.savefig(size_output, dpi=150, bbox_inches="tight")
         plt.close()
         
