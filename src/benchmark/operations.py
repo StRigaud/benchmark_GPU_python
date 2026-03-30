@@ -63,7 +63,6 @@ def numpy_convolve(data: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 def cupy_elementwise_simple(a):
     """Add two arrays using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = a ** 2
     cp.cuda.Stream.null.synchronize()  # Ensure GPU computation is complete
     return result
@@ -71,7 +70,6 @@ def cupy_elementwise_simple(a):
 def cupy_elementwise(a):
     """Add two arrays using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = cp.sin(a) ** 2 + cp.cos(a) ** 2
     cp.cuda.Stream.null.synchronize()  # Ensure GPU computation is complete
     return result
@@ -80,7 +78,6 @@ def cupy_elementwise(a):
 def cupy_gaussian(data, sigma: float = 1.0):
     """Apply Gaussian filter using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     import cupyx.scipy.ndimage as cpndi
     result = cpndi.gaussian_filter(data, sigma=sigma)
     cp.cuda.Stream.null.synchronize()
@@ -90,7 +87,6 @@ def cupy_gaussian(data, sigma: float = 1.0):
 def cupy_slicing(data):
     """Apply threshold using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = data[::3].copy()
     cp.cuda.Stream.null.synchronize()
     return result
@@ -98,7 +94,6 @@ def cupy_slicing(data):
 def cupy_sum(data):
     """Compute sum using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = cp.sum(data)
     cp.cuda.Stream.null.synchronize()
     return result
@@ -107,7 +102,6 @@ def cupy_sum(data):
 def cupy_matmul(a, b):
     """Matrix multiplication using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = cp.matmul(a, b)
     cp.cuda.Stream.null.synchronize()
     return result
@@ -116,7 +110,6 @@ def cupy_matmul(a, b):
 def cupy_std(data):
     """Compute standard deviation using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = cp.std(data)
     cp.cuda.Stream.null.synchronize()
     return result
@@ -125,7 +118,6 @@ def cupy_std(data):
 def cupy_fft(data):
     """Compute FFT using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     result = cp.fft.fftn(data)
     cp.cuda.Stream.null.synchronize()
     return result
@@ -134,7 +126,6 @@ def cupy_fft(data):
 def cupy_convolve(data, kernel):
     """Apply convolution using CuPy."""
     import cupy as cp
-    cp.cuda.Device(-1)
     import cupyx.scipy.ndimage as cpndi
     result = cpndi.convolve(data, kernel)
     cp.cuda.Stream.null.synchronize()
@@ -148,74 +139,52 @@ def cupy_convolve(data, kernel):
 def cle_elementwise_simple(a):
     """Add two arrays using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
-    b = cle.create_like(a)
-    cle.power(a, scalar=2, output_image=b)
-    return b
+    return cle.power(a, scalar=2)
 
 
 def cle_elementwise(a):
     """Add two arrays using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
-    b = cle.evaluate("pow(sin(a), 2) + pow(cos(a), 2)", {"a": a})
-    # return cle.power(cle.sin(a), scalar=2) + cle.power(cle.cos(a), scalar=2)
-    return b
+    return cle.evaluate("pow(sin(a), 2) + pow(cos(a), 2)", {"a": a})
 
 
 def cle_gaussian(data, sigma: float = 1.0):
     """Apply Gaussian filter using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return cle.gaussian_blur(data, sigma_x=sigma, sigma_y=sigma, sigma_z=sigma)
 
 
 def cle_slicing(data):
     """Apply threshold using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return data[::3]
 
 
 def cle_sum(data):
     """Compute sum using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return cle.sum_of_all_pixels(data)
 
 
 def cle_matmul(a, b):
     """Matrix multiplication using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return cle.multiply_matrix(a, b)
 
 
 def cle_std(data):
     """Compute standard deviation using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return cle.standard_deviation_of_all_pixels(data)
 
 
 def cle_fft(data):
     """Compute FFT using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return cle.fft(data)
 
 
 def cle_convolve(data, kernel):
     """Apply convolution using pyclesperanto."""
     import pyclesperanto as cle
-    cle.select_device(1, "gpu")
-    cle.wait_for_kernel_to_finish(True)
     return cle.convolve(data, kernel)

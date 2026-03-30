@@ -44,8 +44,8 @@ BACKENDS = check_backend_availability()
 
 # Define test array sizes
 SIZES = {
-    "64Mb": (128, 512, 512),
-    # "12800Mb": (248, 5120, 5120),
+    "64Mb": (128, 512, 512), #128Mb
+    "8500Mb": (248, 8192, 8192), #8500Mb
 }
 
 
@@ -59,6 +59,11 @@ skip_if_no_cle = pytest.mark.skipif(
     not BACKENDS["pyclesperanto"],
     reason="pyclesperanto not available"
 )
+
+skip_if_no_cle_cuda = pytest.mark.skipif(
+    not BACKENDS["pyclesperanto_cuda"],
+    reason="pyclesperanto_cuda not available"
+)   
 
 
 # ============================================================================
@@ -101,9 +106,19 @@ def cle_arrays(size_name):
     b = generate_test_data(size, "pyclesperanto")
     return a, b, size_name
 
+@pytest.fixture
+def cle_cuda_arrays(size_name):
+    """Generate pyclesperanto cuda test arrays."""
+    if not BACKENDS["pyclesperanto_cuda"]:
+        pytest.skip("pyclesperanto_cuda not available")
+    size = SIZES[size_name]
+    a = generate_test_data(size, "pyclesperanto_cuda")
+    b = generate_test_data(size, "pyclesperanto_cuda")
+    return a, b, size_name
+
 
 # ============================================================================
-# Elementwise simple Benchmarks
+# NumPy Operations
 # ============================================================================
 
 def test_elementwise_simple_numpy(benchmark, numpy_arrays):
@@ -120,6 +135,128 @@ def test_elementwise_simple_numpy(benchmark, numpy_arrays):
     assert result.shape == a.shape
 
 
+def test_elementwise_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array elementwise operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'elementwise'
+    })
+    numpy_elementwise(a) # Warm-up
+    result = benchmark(numpy_elementwise, a)
+    assert result.shape == a.shape
+
+
+def test_gaussian_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy gaussian filter."""
+    a, _, size_name = numpy_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    numpy_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(numpy_gaussian, a, sigma=s)
+    assert result.shape == a.shape
+
+
+def test_slicing_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy slicing."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'slicing (stridded)'
+    })
+    numpy_slicing(a) # Warm-up
+    result = benchmark(numpy_slicing, a)
+    assert True
+
+
+def test_sum_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array sum operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'sum'
+    })
+    numpy_sum(a) # Warm-up
+    result = benchmark(numpy_sum, a)
+    assert True
+
+
+def test_matmul_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy matrix multiplication."""
+    a, b, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'matmul (2d)'
+    })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
+    numpy_matmul(a, b) # Warm-up
+    result = benchmark(numpy_matmul, a, b)
+    assert True
+    
+
+def test_std_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy array standard deviation operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'std'
+    })
+    numpy_std(a) # Warm-up
+    result = benchmark(numpy_std, a)
+    assert True
+
+
+def test_fft_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy FFT operation."""
+    a, _, size_name = numpy_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'fft'
+    })
+    numpy_fft(a) # Warm-up
+    result = benchmark(numpy_fft, a)
+    assert True
+
+
+def test_convolve_numpy(benchmark, numpy_arrays):
+    """Benchmark numpy convolution operation."""
+    a, _, size_name = numpy_arrays
+    # Create a nxnxn kernel
+    n = 7
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'numpy',
+        'operation': 'convolve({n})'.format(n=n)
+    })
+    numpy_convolve(a, kernel) # Warm-up
+    result = benchmark(numpy_convolve, a, kernel)
+    assert result.shape == a.shape
+
+
+# ============================================================================
+# CuPy Operations
+# ============================================================================
+
 @skip_if_no_cupy
 def test_elementwise_simple_cupy(benchmark, cupy_arrays):
     """Benchmark cupy array elementwise operation."""
@@ -135,39 +272,6 @@ def test_elementwise_simple_cupy(benchmark, cupy_arrays):
     assert result.shape == a.shape
 
 
-@skip_if_no_cle
-def test_elementwise_simple_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto array elementwise operation."""
-    a, _, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'elementwise_simple'
-    })
-    cle_elementwise_simple(a) # Warm-up
-    result = benchmark(cle_elementwise_simple, a)
-    assert result.shape == a.shape
-
-
-# ============================================================================
-# Elementwise Benchmarks
-# ============================================================================
-
-def test_elementwise_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy array elementwise operation."""
-    a, _, size_name = numpy_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'elementwise'
-    })
-    numpy_elementwise(a) # Warm-up
-    result = benchmark(numpy_elementwise, a)
-    assert result.shape == a.shape
-
-
 @skip_if_no_cupy
 def test_elementwise_cupy(benchmark, cupy_arrays):
     """Benchmark cupy array elementwise operation."""
@@ -180,39 +284,6 @@ def test_elementwise_cupy(benchmark, cupy_arrays):
     })
     cupy_elementwise(a) # Warm-up
     result = benchmark(cupy_elementwise, a)
-    assert result.shape == a.shape
-
-
-@skip_if_no_cle
-def test_elementwise_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto array elementwise operation."""
-    a, _, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'elementwise'
-    })
-    cle_elementwise(a) # Warm-up
-    result = benchmark(cle_elementwise, a)
-    assert result.shape == a.shape
-
-# ============================================================================
-# Gaussian Filter Benchmarks
-# ============================================================================
-
-def test_gaussian_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy gaussian filter."""
-    a, _, size_name = numpy_arrays
-    s = 7.0
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'gaussian({sigma})'.format(sigma=s)
-    })
-    numpy_gaussian(a, sigma=s) # Warm-up
-    result = benchmark(numpy_gaussian, a, sigma=s)
     assert result.shape == a.shape
 
 
@@ -232,40 +303,6 @@ def test_gaussian_cupy(benchmark, cupy_arrays):
     assert result.shape == a.shape
 
 
-@skip_if_no_cle
-def test_gaussian_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto gaussian filter."""
-    a, _, size_name = cle_arrays
-    s = 7.0
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'gaussian({sigma})'.format(sigma=s)
-    })
-    cle_gaussian(a, sigma=s) # Warm-up
-    result = benchmark(cle_gaussian, a, sigma=s)
-    assert result.shape == a.shape
-
-
-# ============================================================================
-# Slicing Benchmarks
-# ============================================================================
-
-def test_slicing_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy slicing."""
-    a, _, size_name = numpy_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'slicing'
-    })
-    numpy_slicing(a) # Warm-up
-    result = benchmark(numpy_slicing, a)
-    assert True
-
-
 @skip_if_no_cupy
 def test_slicing_cupy(benchmark, cupy_arrays):
     """Benchmark cupy slicing."""
@@ -274,42 +311,11 @@ def test_slicing_cupy(benchmark, cupy_arrays):
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'cupy',
-        'operation': 'slicing'
+        'operation': 'slicing (stridded)'
     })
     cupy_slicing(a) # Warm-up
     result = benchmark(cupy_slicing, a)
     assert True
-
-
-@skip_if_no_cle
-def test_slicing_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto slicing."""
-    a, _, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'slicing'
-    })
-    cle_slicing(a) # Warm-up
-    result = benchmark(cle_slicing, a)
-    assert True
-
-# ============================================================================
-# Sum Benchmarks
-# ============================================================================
-
-def test_sum_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy array sum operation."""
-    a, _, size_name = numpy_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'sum'
-    })
-    numpy_sum(a) # Warm-up
-    result = benchmark(numpy_sum, a)
 
 
 @skip_if_no_cupy
@@ -326,37 +332,6 @@ def test_sum_cupy(benchmark, cupy_arrays):
     result = benchmark(cupy_sum, a)
 
 
-@skip_if_no_cle
-def test_sum_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto array sum operation."""
-    a, _, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'sum'
-    })
-    cle_sum(a) # Warm-up
-    result = benchmark(cle_sum, a)
-
-# ============================================================================
-# Matmul Benchmarks
-# ============================================================================
-
-def test_matmul_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy matrix multiplication."""
-    a, b, size_name = numpy_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'matmul (2d)'
-    })
-    a = a[0] if len(a.shape) > 2 else a
-    b = b[0] if len(b.shape) > 2 else b
-    numpy_matmul(a, b) # Warm-up
-    result = benchmark(numpy_matmul, a, b)
-    assert result.shape == a.shape 
 
 @skip_if_no_cupy
 def test_matmul_cupy(benchmark, cupy_arrays):
@@ -374,38 +349,6 @@ def test_matmul_cupy(benchmark, cupy_arrays):
     result = benchmark(cupy_matmul, a, b)
     assert result.shape == a.shape
 
-@skip_if_no_cle
-def test_matmul_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto matrix multiplication."""
-    a, b, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'matmul (2d)'
-    })
-    a = a[0] if len(a.shape) > 2 else a
-    b = b[0] if len(b.shape) > 2 else b
-    cle_matmul(a, b) # Warm-up
-    result = benchmark(cle_matmul, a, b)
-    assert result.shape == a.shape
-
-# ============================================================================
-# Standard Deviation Benchmarks
-# ============================================================================
-
-def test_std_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy array standard deviation operation."""
-    a, _, size_name = numpy_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'std'
-    })
-    numpy_std(a) # Warm-up
-    result = benchmark(numpy_std, a)
-
 
 @skip_if_no_cupy
 def test_std_cupy(benchmark, cupy_arrays):
@@ -421,37 +364,6 @@ def test_std_cupy(benchmark, cupy_arrays):
     result = benchmark(cupy_std, a)
 
 
-@skip_if_no_cle
-def test_std_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto array standard deviation operation."""
-    a, _, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'std'
-    })
-    cle_std(a) # Warm-up
-    result = benchmark(cle_std, a)
-
-# ============================================================================
-# FFT Benchmarks
-# ============================================================================
-
-def test_fft_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy FFT operation."""
-    a, _, size_name = numpy_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'fft'
-    })
-    numpy_fft(a) # Warm-up
-    result = benchmark(numpy_fft, a)
-    assert True
-
-
 @skip_if_no_cupy
 def test_fft_cupy(benchmark, cupy_arrays):
     """Benchmark cupy FFT operation."""
@@ -465,41 +377,6 @@ def test_fft_cupy(benchmark, cupy_arrays):
     cupy_fft(a) # Warm-up
     result = benchmark(cupy_fft, a)
     assert True
-
-
-@skip_if_no_cle
-def test_fft_pyclesperanto(benchmark, cle_arrays):
-    """Benchmark pyclesperanto FFT operation."""
-    a, _, size_name = cle_arrays
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto',
-        'operation': 'fft'
-    })
-    cle_fft(a) # Warm-up
-    result = benchmark(cle_fft, a)
-    assert True
-
-# ============================================================================
-# Convolution Benchmarks
-# ============================================================================
-
-def test_convolve_numpy(benchmark, numpy_arrays):
-    """Benchmark numpy convolution operation."""
-    a, _, size_name = numpy_arrays
-    # Create a nxnxn kernel
-    n = 7
-    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
-    benchmark.extra_info.update({
-        'size': size_name,
-        'size_shape': SIZES[size_name],
-        'backend': 'numpy',
-        'operation': 'convolve({n})'.format(n=n)
-    })
-    numpy_convolve(a, kernel) # Warm-up
-    result = benchmark(numpy_convolve, a, kernel)
-    assert result.shape == a.shape
 
 
 @skip_if_no_cupy
@@ -522,6 +399,132 @@ def test_convolve_cupy(benchmark, cupy_arrays):
     assert result.shape == a.shape
 
 
+# ============================================================================
+# pyclesperanto Operations
+# ============================================================================
+
+@skip_if_no_cle
+def test_elementwise_simple_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_elementwise_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'elementwise'
+    })
+    cle_elementwise(a) # Warm-up
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_gaussian_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto gaussian filter."""
+    a, _, size_name = cle_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
+    assert result.shape == a.shape
+
+
+
+@skip_if_no_cle
+def test_slicing_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto slicing."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'slicing (stridded)'
+    })
+    cle_slicing(a) # Warm-up
+    result = benchmark(cle_slicing, a)
+    assert True
+
+
+@skip_if_no_cle
+def test_sum_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array sum operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'sum'
+    })
+    cle_sum(a) # Warm-up
+    result = benchmark(cle_sum, a)
+
+
+@skip_if_no_cle
+def test_matmul_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto matrix multiplication."""
+    a, b, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'matmul (2d)'
+    })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
+    cle_matmul(a, b) # Warm-up
+    result = benchmark(cle_matmul, a, b)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_std_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array standard deviation operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'std'
+    })
+    cle_std(a) # Warm-up
+    result = benchmark(cle_std, a)
+
+
+@skip_if_no_cle
+def test_fft_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto FFT operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'fft'
+    })
+    cle_fft(a) # Warm-up
+    result = benchmark(cle_fft, a)
+    assert True
+
+
 @skip_if_no_cle
 def test_convolve_pyclesperanto(benchmark, cle_arrays):
     """Benchmark pyclesperanto convolution operation."""
@@ -535,6 +538,151 @@ def test_convolve_pyclesperanto(benchmark, cle_arrays):
         'size': size_name,
         'size_shape': SIZES[size_name],
         'backend': 'pyclesperanto',
+        'operation': 'convolve({n})'.format(n=n)
+    })
+    cle_convolve(a, kernel) # Warm-up
+    result = benchmark(cle_convolve, a, kernel)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_elementwise_simple_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_elementwise_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'elementwise'
+    })
+    cle_elementwise(a) # Warm-up
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle
+def test_gaussian_pyclesperanto(benchmark, cle_arrays):
+    """Benchmark pyclesperanto gaussian filter."""
+    a, _, size_name = cle_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
+    assert result.shape == a.shape
+
+
+# ===========================================================================
+# pyclesperanto CUDA Operations
+# ===========================================================================
+
+@skip_if_no_cle_cuda
+def test_slicing_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto slicing."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto_cuda',
+        'operation': 'slicing (stridded)'
+    })
+    cle_slicing(a) # Warm-up
+    result = benchmark(cle_slicing, a)
+    assert True
+
+
+@skip_if_no_cle_cuda
+def test_sum_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto array sum operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto_cuda',
+        'operation': 'sum'
+    })
+    cle_sum(a) # Warm-up
+    result = benchmark(cle_sum, a)
+
+
+@skip_if_no_cle_cuda
+def test_matmul_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto matrix multiplication."""
+    a, b, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto_cuda',
+        'operation': 'matmul (2d)'
+    })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
+    cle_matmul(a, b) # Warm-up
+    result = benchmark(cle_matmul, a, b)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_cuda
+def test_std_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto array standard deviation operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto_cuda',
+        'operation': 'std'
+    })
+    cle_std(a) # Warm-up
+    result = benchmark(cle_std, a)
+
+
+@skip_if_no_cle_cuda
+def test_fft_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto FFT operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto_cuda',
+        'operation': 'fft'
+    })
+    cle_fft(a) # Warm-up
+    result = benchmark(cle_fft, a)
+    assert True
+
+
+@skip_if_no_cle_cuda
+def test_convolve_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto convolution operation."""
+    import pyclesperanto as cle
+    a, _, size_name = cle_cuda_arrays
+    # Create a nxnxn kernel
+    n = 7
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+    kernel = cle.push(kernel)
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto_cuda',
         'operation': 'convolve({n})'.format(n=n)
     })
     cle_convolve(a, kernel) # Warm-up
