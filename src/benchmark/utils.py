@@ -15,6 +15,7 @@ def check_backend_availability() -> Dict[str, bool]:
         "cupy": False,
         "pyclesperanto": False,
         "pyclesperanto_cuda": False,
+        "pyclesperanto_metal": False,
     }
     
     # NumPy should always be available
@@ -45,6 +46,14 @@ def check_backend_availability() -> Dict[str, bool]:
         import pyclesperanto as cle
         if "cuda" in cle.list_available_backends():
             backends["pyclesperanto_cuda"] = True
+    except ImportError:
+        pass
+
+    # Check pyclesperanto metal
+    try:
+        import pyclesperanto as cle
+        if "metal" in cle.list_available_backends():
+            backends["pyclesperanto_metal"] = True
     except ImportError:
         pass
 
@@ -85,5 +94,11 @@ def generate_test_data(size: tuple, backend: str = "numpy"):
         cle.select_device(1, "gpu")
         cle.wait_for_kernel_to_finish(True)
         return cle.push(data)    
+    elif backend == "pyclesperanto_metal":
+        import pyclesperanto as cle
+        cle.select_backend("metal")
+        cle.select_device(1, "gpu")
+        cle.wait_for_kernel_to_finish(True)
+        return cle.push(data)
     else:
         raise ValueError(f"Unknown backend: {backend}")

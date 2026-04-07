@@ -44,8 +44,8 @@ BACKENDS = check_backend_availability()
 
 # Define test array sizes
 SIZES = {
-    "64Mb": (128, 512, 512), #128Mb
-    "8500Mb": (248, 8192, 8192), #8500Mb
+    "134Mb": (128, 512, 512), #134Mb
+    "21247Mb": (128, 2048, 2048), #21247Mb
 }
 
 
@@ -64,6 +64,11 @@ skip_if_no_cle_cuda = pytest.mark.skipif(
     not BACKENDS["pyclesperanto_cuda"],
     reason="pyclesperanto_cuda not available"
 )   
+
+skip_if_no_cle_metal = pytest.mark.skipif(
+    not BACKENDS["pyclesperanto_metal"],
+    reason="pyclesperanto_metal not available"
+)
 
 
 # ============================================================================
@@ -114,6 +119,16 @@ def cle_cuda_arrays(size_name):
     size = SIZES[size_name]
     a = generate_test_data(size, "pyclesperanto_cuda")
     b = generate_test_data(size, "pyclesperanto_cuda")
+    return a, b, size_name
+
+@pytest.fixture
+def cle_metal_arrays(size_name):
+    """Generate pyclesperanto metal test arrays."""
+    if not BACKENDS["pyclesperanto_metal"]:
+        pytest.skip("pyclesperanto_metal not available")
+    size = SIZES[size_name]
+    a = generate_test_data(size, "pyclesperanto_metal")
+    b = generate_test_data(size, "pyclesperanto_metal")
     return a, b, size_name
 
 
@@ -596,13 +611,60 @@ def test_gaussian_pyclesperanto(benchmark, cle_arrays):
 # ===========================================================================
 
 @skip_if_no_cle_cuda
+def test_elementwise_simple_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (cuda)',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_cuda
+def test_elementwise_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (cuda)',
+        'operation': 'elementwise'
+    })
+    cle_elementwise(a) # Warm-up
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_cuda
+def test_gaussian_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto gaussian filter."""
+    a, _, size_name = cle_cuda_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (cuda)',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
+    assert result.shape == a.shape
+
+
+
+@skip_if_no_cle_cuda
 def test_slicing_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
     """Benchmark pyclesperanto slicing."""
     a, _, size_name = cle_cuda_arrays
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto_cuda',
+        'backend': 'pyclesperanto (cuda)',
         'operation': 'slicing (stridded)'
     })
     cle_slicing(a) # Warm-up
@@ -617,7 +679,7 @@ def test_sum_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto_cuda',
+        'backend': 'pyclesperanto (cuda)',
         'operation': 'sum'
     })
     cle_sum(a) # Warm-up
@@ -631,7 +693,7 @@ def test_matmul_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto_cuda',
+        'backend': 'pyclesperanto (cuda)',
         'operation': 'matmul (2d)'
     })
     a = a[0] if len(a.shape) > 2 else a
@@ -648,7 +710,7 @@ def test_std_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto_cuda',
+        'backend': 'pyclesperanto (cuda)',
         'operation': 'std'
     })
     cle_std(a) # Warm-up
@@ -662,7 +724,7 @@ def test_fft_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto_cuda',
+        'backend': 'pyclesperanto (cuda)',
         'operation': 'fft'
     })
     cle_fft(a) # Warm-up
@@ -682,9 +744,248 @@ def test_convolve_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
     benchmark.extra_info.update({
         'size': size_name,
         'size_shape': SIZES[size_name],
-        'backend': 'pyclesperanto_cuda',
+        'backend': 'pyclesperanto (cuda)',
         'operation': 'convolve({n})'.format(n=n)
     })
     cle_convolve(a, kernel) # Warm-up
     result = benchmark(cle_convolve, a, kernel)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_cuda
+def test_elementwise_simple_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (cuda)',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_cuda
+def test_elementwise_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_cuda_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (cuda)',
+        'operation': 'elementwise'
+    })
+    cle_elementwise(a) # Warm-up
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_cuda
+def test_gaussian_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
+    """Benchmark pyclesperanto gaussian filter."""
+    a, _, size_name = cle_cuda_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (cuda)',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
+    assert result.shape == a.shape
+
+
+# ===========================================================================
+# pyclesperanto Metal Operations
+# ===========================================================================
+
+
+@skip_if_no_cle_metal
+def test_elementwise_simple_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_metal
+def test_elementwise_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'elementwise'
+    })
+    cle_elementwise(a) # Warm-up
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_metal
+def test_gaussian_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto gaussian filter."""
+    a, _, size_name = cle_metal_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
+    assert result.shape == a.shape
+
+
+
+@skip_if_no_cle_metal
+def test_slicing_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto slicing."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'slicing (stridded)'
+    })
+    cle_slicing(a) # Warm-up
+    result = benchmark(cle_slicing, a)
+    assert True
+
+
+@skip_if_no_cle_metal
+def test_sum_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto array sum operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'sum'
+    })
+    cle_sum(a) # Warm-up
+    result = benchmark(cle_sum, a)
+
+
+@skip_if_no_cle_metal
+def test_matmul_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto matrix multiplication."""
+    a, b, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'matmul (2d)'
+    })
+    a = a[0] if len(a.shape) > 2 else a
+    b = b[0] if len(b.shape) > 2 else b
+    cle_matmul(a, b) # Warm-up
+    result = benchmark(cle_matmul, a, b)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_metal
+def test_std_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto array standard deviation operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'std'
+    })
+    cle_std(a) # Warm-up
+    result = benchmark(cle_std, a)
+
+
+@skip_if_no_cle_metal
+def test_fft_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto FFT operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'fft'
+    })
+    cle_fft(a) # Warm-up
+    result = benchmark(cle_fft, a)
+    assert True
+
+
+@skip_if_no_cle_metal
+def test_convolve_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto convolution operation."""
+    import pyclesperanto as cle
+    a, _, size_name = cle_metal_arrays
+    # Create a nxnxn kernel
+    n = 7
+    kernel = np.ones((n, n, n), dtype=np.float32) / (n ** 3) if len(a.shape) == 3 else np.ones((n, n), dtype=np.float32) / (n ** 2 )
+    kernel = cle.push(kernel)
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'convolve({n})'.format(n=n)
+    })
+    cle_convolve(a, kernel) # Warm-up
+    result = benchmark(cle_convolve, a, kernel)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_metal
+def test_elementwise_simple_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'elementwise_simple'
+    })
+    cle_elementwise_simple(a) # Warm-up
+    result = benchmark(cle_elementwise_simple, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_metal
+def test_elementwise_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto array elementwise operation."""
+    a, _, size_name = cle_metal_arrays
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'elementwise'
+    })
+    cle_elementwise(a) # Warm-up
+    result = benchmark(cle_elementwise, a)
+    assert result.shape == a.shape
+
+
+@skip_if_no_cle_metal
+def test_gaussian_pyclesperanto_metal(benchmark, cle_metal_arrays):
+    """Benchmark pyclesperanto gaussian filter."""
+    a, _, size_name = cle_metal_arrays
+    s = 7.0
+    benchmark.extra_info.update({
+        'size': size_name,
+        'size_shape': SIZES[size_name],
+        'backend': 'pyclesperanto (metal)',
+        'operation': 'gaussian({sigma})'.format(sigma=s)
+    })
+    cle_gaussian(a, sigma=s) # Warm-up
+    result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape

@@ -66,7 +66,7 @@ def create_comparison_chart(
     backends = sorted(df["backend"].unique())
     
     # Color mapping for backends
-    colors = {"numpy": "#1f77b4", "cupy": "#ff7f0e", "pyclesperanto": "#2ca02c"}
+    colors = {"numpy": "#bababa", "cupy": "#00ff00", "pyclesperanto": "#ff0000ff", "pyclesperanto (cuda)": "#00b700", "pyclesperanto (metal)": "#00bfffff"}
     
     # Create one chart per size
     for size in sizes:
@@ -128,9 +128,9 @@ def create_comparison_chart(
         ax.set_yscale("log")
         ax.set_title(f"{title} - Size: {size} - Time in ms (log scale)")
         ax.set_xticks(list(x_positions))
-        ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
+        ax.set_xticklabels([op.replace('_', ' ').title() for op in operations],
+                           rotation=45, ha="right")
         ax.legend(frameon=False)
-        # Remove Y axis (ticks, label, and grid) for cleaner look
         ax.yaxis.set_visible(False)
         ax.grid(False)
         # Make plots spineless for a cleaner visual
@@ -170,7 +170,7 @@ def create_speedup_chart(
     backends = [b for b in sorted(df["backend"].unique()) if b != baseline]
     
     # Color mapping for backends
-    colors = {"cupy": "#ff7f0e", "pyclesperanto": "#2ca02c"}
+    colors = {"cupy": "#00ff00", "pyclesperanto": "#ff0000ff", "pyclesperanto (cuda)": "#00b700", "pyclesperanto (metal)": "#00bfffff"}
     
     # Create one chart per size
     for size in sizes:
@@ -248,27 +248,26 @@ def create_speedup_chart(
                     ) 
         
         # Baseline at 0
+        ax.set_yscale("symlog", linthresh=1)
         ax.axhline(y=0, color="gray", linestyle="--", alpha=0.7, 
                    label=f"{baseline} baseline")
         ax.set_xlabel("Operation")
         ax.set_ylabel(f"Relative Speedup vs {baseline} (x - 1)")
         ax.set_title(f"GPU Speedup Comparison - Size: {size}")
         ax.set_xticks(list(x_positions))
-        ax.set_xticklabels([op.replace('_', ' ').title() for op in operations])
+        ax.set_xticklabels([op.replace('_', ' ').title() for op in operations],
+                           rotation=45, ha="right")
         ax.legend(frameon=False)
-        # Remove Y axis (ticks, label, and grid) for cleaner look
         ax.yaxis.set_visible(False)
         ax.grid(False)
-        # Make plots spineless for a cleaner visual
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
         ax.spines["left"].set_visible(False)
         ax.spines["bottom"].set_visible(False)
         
-        # Save chart with size in filename
         base_path = Path(output_path)
         size_output = base_path.parent / f"{base_path.stem}_{size}{base_path.suffix}"
-        # plt.tight_layout()
+        plt.tight_layout()
         plt.savefig(size_output, dpi=150, bbox_inches="tight")
         plt.close()
         
