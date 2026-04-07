@@ -23,16 +23,25 @@ matplotlib = "*"
 pandas = "*"
 pip = "*"
 scipy = "*"
-# cupy = "*"
 
 [pypi-options]
 index-url = "https://test.pypi.org/simple"
 extra-index-urls = ["https://pypi.org/simple"]
 index-strategy = "unsafe-first-match"
 
+[target.win-64.pypi-dependencies]
+cupy-cuda12x = ">=14.0.1, <15"
+pyclesperanto_cuda = "==0.22.0.rc12"
+
+[target.linux-64.pypi-dependencies]
+cupy-cuda12x = ">=14.0.1, <15"
+pyclesperanto_cuda = "==0.22.0.rc12"
+
+[target.osx-64.pypi-dependencies]
+pyclesperanto_metal = "==0.22.0.rc12"
+
 [pypi-dependencies]
-pyclesperanto = "==0.22.0.rc5"
-pyclesperanto_opencl = "==0.22.0.rc5"
-# pyclesperanto_cuda = "==0.22.0.rc5"
+pyclesperanto = "==0.22.0.rc12"
+pyclesperanto_opencl = "==0.22.0.rc12"
 
 

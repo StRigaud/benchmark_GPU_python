@@ -154,8 +154,11 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libxxf86vm-1.1.7-hb03c661_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zlib-ng-2.3.3-hceb46e0_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_6.conda
-      - pypi: https://test-files.pythonhosted.org/packages/f8/cc/a21f80127f437e0edbfd9799e54402a3f445739098ffeaf929c656fdb42b/pyclesperanto-0.22.0rc5-py3-none-any.whl
-      - pypi: https://test-files.pythonhosted.org/packages/26/d9/368abf0bcfa97dba13508035ef46d981c91ebc852e2e2fee64085de08948/pyclesperanto_opencl-0.22.0rc5-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/f2/f9/1b9b60a30fc463c14cdea7a77228131a0ccc89572e8df9cb86c9648271ab/cuda_pathfinder-1.5.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/80/53/037c931731151c504cfc00069eb295c903927c92145115623f13bd2ea076/cupy_cuda12x-14.0.1-cp313-cp313-manylinux2014_x86_64.whl
+      - pypi: https://test-files.pythonhosted.org/packages/ba/d3/f866128cf7b0517ad67fb7e15700c6154db3c8271aa993c3bc17cb32fab7/pyclesperanto-0.22.0rc12-py3-none-any.whl
+      - pypi: https://test-files.pythonhosted.org/packages/3d/5e/63063de3e018ed2be2bb216dc076a2a553fbb1be7d48d8883e6ac247a183/pyclesperanto_cuda-0.22.0rc12-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://test-files.pythonhosted.org/packages/5f/b1/d749f21f557eecdfc915d54c8dd2ea4f20998c511e0e33e6dffc31b40e64/pyclesperanto_opencl-0.22.0rc12-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fb/12/5911ae3eeec47800503a238d971e51722ccea5feb8569b735184d5fcdbc0/toolz-1.1.0-py3-none-any.whl
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/_openmp_mutex-4.5-7_kmp_llvm.conda
@@ -233,8 +236,9 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/xorg-libxdmcp-1.1.5-h8616949_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zlib-ng-2.3.3-h8bce59a_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h3eecb57_6.conda
-      - pypi: https://test-files.pythonhosted.org/packages/f8/cc/a21f80127f437e0edbfd9799e54402a3f445739098ffeaf929c656fdb42b/pyclesperanto-0.22.0rc5-py3-none-any.whl
-      - pypi: https://test-files.pythonhosted.org/packages/6a/c6/7e6305440a4415c188c4ac7694a6f4367c3fe80443f46162f1aa3d5eda62/pyclesperanto_opencl-0.22.0rc5-cp313-cp313-macosx_11_0_x86_64.whl
+      - pypi: https://test-files.pythonhosted.org/packages/ba/d3/f866128cf7b0517ad67fb7e15700c6154db3c8271aa993c3bc17cb32fab7/pyclesperanto-0.22.0rc12-py3-none-any.whl
+      - pypi: https://test-files.pythonhosted.org/packages/de/af/969c2116f1082f2fd3645b7c2d82baf8a5431f0a320401fc04e7bae117d1/pyclesperanto_metal-0.22.0rc12-cp313-cp313-macosx_11_0_x86_64.whl
+      - pypi: https://test-files.pythonhosted.org/packages/7e/7a/0734e7501b90b7eab231d99be4c06acbe3ae55b06c911815b0652317311f/pyclesperanto_opencl-0.22.0rc12-cp313-cp313-macosx_11_0_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fb/12/5911ae3eeec47800503a238d971e51722ccea5feb8569b735184d5fcdbc0/toolz-1.1.0-py3-none-any.whl
       win-64:
       - conda: https://conda.anaconda.org/conda-forge/win-64/_openmp_mutex-4.5-20_gnu.conda
@@ -341,8 +345,11 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/xorg-libxdmcp-1.1.5-hba3369d_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zlib-ng-2.3.3-h0261ad2_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.7-h534d264_6.conda
-      - pypi: https://test-files.pythonhosted.org/packages/f8/cc/a21f80127f437e0edbfd9799e54402a3f445739098ffeaf929c656fdb42b/pyclesperanto-0.22.0rc5-py3-none-any.whl
-      - pypi: https://test-files.pythonhosted.org/packages/28/48/ea3ef72a1028c228291b33d2ef38c1725bb04693106169a33d53788a57c7/pyclesperanto_opencl-0.22.0rc5-cp313-cp313-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/f2/f9/1b9b60a30fc463c14cdea7a77228131a0ccc89572e8df9cb86c9648271ab/cuda_pathfinder-1.5.2-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/a3/70/ce8344426effda22152bf30cfb8f9b6477645d0f41df784674369af8f422/cupy_cuda12x-14.0.1-cp313-cp313-win_amd64.whl
+      - pypi: https://test-files.pythonhosted.org/packages/ba/d3/f866128cf7b0517ad67fb7e15700c6154db3c8271aa993c3bc17cb32fab7/pyclesperanto-0.22.0rc12-py3-none-any.whl
+      - pypi: https://test-files.pythonhosted.org/packages/09/cd/0ed58bc7a2fe4c6fb871284ada238bb9daac6bd3cd3c55e2c9bba8d2d6fd/pyclesperanto_cuda-0.22.0rc12-cp313-cp313-win_amd64.whl
+      - pypi: https://test-files.pythonhosted.org/packages/38/a6/1b2241b4c2ce8603463dcb6606a55d3a41e707c9b286ff7ec10330874f5f/pyclesperanto_opencl-0.22.0rc12-cp313-cp313-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/fb/12/5911ae3eeec47800503a238d971e51722ccea5feb8569b735184d5fcdbc0/toolz-1.1.0-py3-none-any.whl
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
@@ -634,6 +641,43 @@ packages:
   - pkg:pypi/contourpy?source=hash-mapping
   size: 245288
   timestamp: 1769155992139
+- pypi: https://files.pythonhosted.org/packages/f2/f9/1b9b60a30fc463c14cdea7a77228131a0ccc89572e8df9cb86c9648271ab/cuda_pathfinder-1.5.2-py3-none-any.whl
+  name: cuda-pathfinder
+  version: 1.5.2
+  sha256: 0c5f160a7756c5b072723cbbd6d861e38917ef956c68150b02f0b6e9271c71fa
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/80/53/037c931731151c504cfc00069eb295c903927c92145115623f13bd2ea076/cupy_cuda12x-14.0.1-cp313-cp313-manylinux2014_x86_64.whl
+  name: cupy-cuda12x
+  version: 14.0.1
+  sha256: 21fcb4e917e43237edcc5e3a1a1241e2a2946ba9e577ce36fd580bd9856f91e8
+  requires_dist:
+  - numpy>=2.0,<2.6
+  - cuda-pathfinder==1.*,>=1.3.3
+  - scipy>=1.10,<1.17 ; extra == 'all'
+  - cython>=3 ; extra == 'all'
+  - optuna>=2.0 ; extra == 'all'
+  - packaging ; extra == 'test'
+  - pytest>=7.2 ; extra == 'test'
+  - hypothesis>=6.37.2,<6.55.0 ; extra == 'test'
+  - mpmath ; extra == 'test'
+  - cuda-toolkit[cublas,cudart,cufft,curand,cusolver,cusparse,nvrtc]==12.* ; extra == 'ctk'
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/a3/70/ce8344426effda22152bf30cfb8f9b6477645d0f41df784674369af8f422/cupy_cuda12x-14.0.1-cp313-cp313-win_amd64.whl
+  name: cupy-cuda12x
+  version: 14.0.1
+  sha256: b7399e7fe4e2be3b5c3974fc892a661e10082836a4c78d0152b39cb483608a89
+  requires_dist:
+  - numpy>=2.0,<2.6
+  - cuda-pathfinder==1.*,>=1.3.3
+  - scipy>=1.10,<1.17 ; extra == 'all'
+  - cython>=3 ; extra == 'all'
+  - optuna>=2.0 ; extra == 'all'
+  - packaging ; extra == 'test'
+  - pytest>=7.2 ; extra == 'test'
+  - hypothesis>=6.37.2,<6.55.0 ; extra == 'test'
+  - mpmath ; extra == 'test'
+  - cuda-toolkit[cublas,cudart,cufft,curand,cusolver,cusparse,nvrtc]==12.* ; extra == 'ctk'
+  requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/noarch/cycler-0.12.1-pyhcf101f3_2.conda
   sha256: bb47aec5338695ff8efbddbc669064a3b10fe34ad881fb8ad5d64fbfa6910ed1
   md5: 4c2a8fef270f6c69591889b93f9f55c1
@@ -3258,33 +3302,50 @@ packages:
   - pkg:pypi/py-cpuinfo?source=hash-mapping
   size: 25766
   timestamp: 1733236452235
-- pypi: https://test-files.pythonhosted.org/packages/f8/cc/a21f80127f437e0edbfd9799e54402a3f445739098ffeaf929c656fdb42b/pyclesperanto-0.22.0rc5-py3-none-any.whl
+- pypi: https://test-files.pythonhosted.org/packages/ba/d3/f866128cf7b0517ad67fb7e15700c6154db3c8271aa993c3bc17cb32fab7/pyclesperanto-0.22.0rc12-py3-none-any.whl
   name: pyclesperanto
-  version: 0.22.0rc5
-  sha256: e1aac97bc189c209eabc43f5983cf4e185db3ee174437fd5e83865c26838b50f
+  version: 0.22.0rc12
+  sha256: b573a335228c1423075462cbe0d56a5f47c72e9c850cbb4bf08c22995655bed5
   requires_dist:
   - matplotlib>=3.5,<4
   - numpy>=1.20,<3
-  - pyclesperanto-opencl>=0.22.0rc5
+  - pyclesperanto-opencl>=0.22.0rc12
   - toolz>=0.11,<2
-  - pyclesperanto-cuda>=0.22.0rc5 ; sys_platform != 'darwin' and extra == 'all'
-  - pyclesperanto-opencl>=0.22.0rc5 ; extra == 'all'
-  - pyclesperanto-cuda>=0.22.0rc5 ; sys_platform != 'darwin' and extra == 'cuda'
+  - pyclesperanto-cuda>=0.22.0rc12 ; sys_platform != 'darwin' and extra == 'all'
+  - pyclesperanto-metal>=0.22.0rc12 ; sys_platform == 'darwin' and extra == 'all'
+  - pyclesperanto-opencl>=0.22.0rc12 ; extra == 'all'
+  - pyclesperanto-cuda>=0.22.0rc12 ; sys_platform != 'darwin' and extra == 'cuda'
+  - pyclesperanto-metal>=0.22.0rc12 ; sys_platform == 'darwin' and extra == 'metal'
   requires_python: '>=3.8'
-- pypi: https://test-files.pythonhosted.org/packages/26/d9/368abf0bcfa97dba13508035ef46d981c91ebc852e2e2fee64085de08948/pyclesperanto_opencl-0.22.0rc5-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-  name: pyclesperanto-opencl
-  version: 0.22.0rc5
-  sha256: 21333955ab736a71971c227ef2a6b04c1066ec655789d680dba00bdd1dc9b176
+- pypi: https://test-files.pythonhosted.org/packages/09/cd/0ed58bc7a2fe4c6fb871284ada238bb9daac6bd3cd3c55e2c9bba8d2d6fd/pyclesperanto_cuda-0.22.0rc12-cp313-cp313-win_amd64.whl
+  name: pyclesperanto-cuda
+  version: 0.22.0rc12
+  sha256: d1c1e330f6b0482ad94910ab126214aad02b514732234769d89fcb7bea0dfa6a
   requires_python: '>=3.8'
-- pypi: https://test-files.pythonhosted.org/packages/28/48/ea3ef72a1028c228291b33d2ef38c1725bb04693106169a33d53788a57c7/pyclesperanto_opencl-0.22.0rc5-cp313-cp313-win_amd64.whl
-  name: pyclesperanto-opencl
-  version: 0.22.0rc5
-  sha256: 1b82e458e53465f39e2d854fa097b0e89e8e09584c39c0878b92c3f45bdeb3d6
+- pypi: https://test-files.pythonhosted.org/packages/3d/5e/63063de3e018ed2be2bb216dc076a2a553fbb1be7d48d8883e6ac247a183/pyclesperanto_cuda-0.22.0rc12-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+  name: pyclesperanto-cuda
+  version: 0.22.0rc12
+  sha256: f69e558816d4a7e51d69f208d3ca91b3d298b723e53633d1adf842eb5fdc0a2d
   requires_python: '>=3.8'
-- pypi: https://test-files.pythonhosted.org/packages/6a/c6/7e6305440a4415c188c4ac7694a6f4367c3fe80443f46162f1aa3d5eda62/pyclesperanto_opencl-0.22.0rc5-cp313-cp313-macosx_11_0_x86_64.whl
+- pypi: https://test-files.pythonhosted.org/packages/de/af/969c2116f1082f2fd3645b7c2d82baf8a5431f0a320401fc04e7bae117d1/pyclesperanto_metal-0.22.0rc12-cp313-cp313-macosx_11_0_x86_64.whl
+  name: pyclesperanto-metal
+  version: 0.22.0rc12
+  sha256: 43fd1d8b8320ddef594475e16e0a6e04cf1210d67d305c604de551ab1365534e
+  requires_python: '>=3.8'
+- pypi: https://test-files.pythonhosted.org/packages/38/a6/1b2241b4c2ce8603463dcb6606a55d3a41e707c9b286ff7ec10330874f5f/pyclesperanto_opencl-0.22.0rc12-cp313-cp313-win_amd64.whl
   name: pyclesperanto-opencl
-  version: 0.22.0rc5
-  sha256: 347a3cf8520c9b2c46db3c1bbd7493e841962264998654a9eb5b5e110ab3c121
+  version: 0.22.0rc12
+  sha256: 1032950f28f152328d5bdc141d405f4fe76f9bf6ef06451b219f9c55a05ac457
+  requires_python: '>=3.8'
+- pypi: https://test-files.pythonhosted.org/packages/5f/b1/d749f21f557eecdfc915d54c8dd2ea4f20998c511e0e33e6dffc31b40e64/pyclesperanto_opencl-0.22.0rc12-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+  name: pyclesperanto-opencl
+  version: 0.22.0rc12
+  sha256: 2decfea537d53bcd7ec4701521f7319b6ff651820ff95a3b677d828cb9563002
+  requires_python: '>=3.8'
+- pypi: https://test-files.pythonhosted.org/packages/7e/7a/0734e7501b90b7eab231d99be4c06acbe3ae55b06c911815b0652317311f/pyclesperanto_opencl-0.22.0rc12-cp313-cp313-macosx_11_0_x86_64.whl
+  name: pyclesperanto-opencl
+  version: 0.22.0rc12
+  sha256: d1c1f2f738acd28c58f614a10dd3353a8296497e831fc1030b7852409905af8f
   requires_python: '>=3.8'
 - conda: https://conda.anaconda.org/conda-forge/noarch/pygments-2.19.2-pyhd8ed1ab_0.conda
   sha256: 5577623b9f6685ece2697c6eb7511b4c9ac5fb607c9babc2646c811b428fd46a
