@@ -277,57 +277,45 @@ def create_speedup_chart(
 
 def main():
     """Main entry point for chart generation CLI."""
-    import argparse
-    
-    parser = argparse.ArgumentParser(
-        description="Generate benchmark comparison charts"
-    )
-    parser.add_argument(
-        "--input", "-i",
-        default=".",
-        help="Path to benchmark results directory or JSON file"
-    )
-    parser.add_argument(
-        "--output", "-o",
-        default="benchmark_results",
-        help="Output directory for charts"
-    )
-    
-    args = parser.parse_args()
-    
+
     # Find benchmark results
-    input_path = Path(args.input)
+    input_path = Path(".")
     if input_path.is_dir():
-        # Find most recent benchmark JSON
-        json_files = list(input_path.rglob("benchmark_results.json"))
-        if not json_files:
+
+        # find all JSON files that match the pattern "*_benchmark_*.json" 
+        json_files = list(input_path.rglob("*_benchmark_*.json"))
+        if len(json_files) == 0:
             print(f"No benchmark JSON files found in {input_path}")
             return
-        json_file = max(json_files, key=os.path.getmtime)
-    else:
-        json_file = input_path
+        # json_file = max(json_files, key=os.path.getmtime)
+    # else:
+    #     json_file = input_path
     
-    print(f"Loading benchmark results from: {json_file}")
+    print(f"Found {len(json_files)} benchmark files in {input_path}")
     
-    # Create output directory
-    output_dir = Path(args.output)
-    output_dir.mkdir(exist_ok=True)
-    
-    # Load and process results
-    df = load_benchmark_results(str(json_file))
-    
-    # Generate charts
-    create_comparison_chart(
-        df,
-        output_path=str(output_dir / "benchmark_comparison.png")
-    )
-    
-    create_speedup_chart(
-        df,
-        output_path=str(output_dir / "speedup_comparison.png")
-    )
-    
-    print(f"\nCharts saved to: {output_dir}")
+    for json_file in json_files:
+
+        print(f"\nProcessing benchmark file: {json_file}")
+
+        # Create output directory from json filename
+        output_dir = Path(json_file).parent / f"{Path(json_file).stem}_charts"
+        output_dir.mkdir(exist_ok=True)
+        
+        # Load and process results
+        df = load_benchmark_results(str(json_file))
+        
+        # Generate charts
+        create_comparison_chart(
+            df,
+            output_path=str(output_dir / "benchmark_comparison.png")
+        )
+        
+        create_speedup_chart(
+            df,
+            output_path=str(output_dir / "speedup_comparison.png")
+        )
+        
+        print(f"\nCharts saved to: {output_dir}")
 
 
 if __name__ == "__main__":
