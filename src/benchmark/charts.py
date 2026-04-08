@@ -66,7 +66,7 @@ def create_comparison_chart(
     backends = sorted(df["backend"].unique())
     
     # Color mapping for backends
-    colors = {"numpy": "#bababa", "cupy": "#00ff00", "pyclesperanto": "#ff0000ff", "pyclesperanto (cuda)": "#00b700", "pyclesperanto (metal)": "#00bfffff"}
+    colors = {"numpy": "#bababa", "cupy": "#880086", "pyclesperanto": "#ff0000ff", "pyclesperanto (cuda)": "#00b700", "pyclesperanto (metal)": "#00bfffff"}
     
     # Create one chart per size
     for size in sizes:
@@ -78,10 +78,10 @@ def create_comparison_chart(
         # Create figure
         fig, ax = plt.subplots(figsize=(12, 6))
         
-        x_positions = range(len(operations))
+        group_spacing = max(len(backends) * 0.25 + 0.4, 1.0)
+        x_positions = [i * group_spacing for i in range(len(operations))]
         width = 0.25
         
-        # Plot bars for each backend
         for i, backend in enumerate(backends):
             backend_data = size_data[size_data["backend"] == backend]
             
@@ -170,7 +170,7 @@ def create_speedup_chart(
     backends = [b for b in sorted(df["backend"].unique()) if b != baseline]
     
     # Color mapping for backends
-    colors = {"cupy": "#00ff00", "pyclesperanto": "#ff0000ff", "pyclesperanto (cuda)": "#00b700", "pyclesperanto (metal)": "#00bfffff"}
+    colors = {"cupy": "#880086", "pyclesperanto": "#ff0000ff", "pyclesperanto (cuda)": "#00b700", "pyclesperanto (metal)": "#00bfffff"}
     
     # Create one chart per size
     for size in sizes:
@@ -208,7 +208,8 @@ def create_speedup_chart(
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 6))
         
-        x_positions = range(len(operations))
+        group_spacing = max(len(backends) * 0.35 + 0.4, 1.0)
+        x_positions = [i * group_spacing for i in range(len(operations))]
         width = 0.35
         
         for i, backend in enumerate(backends):
@@ -253,7 +254,7 @@ def create_speedup_chart(
                    label=f"{baseline} baseline")
         ax.set_xlabel("Operation")
         ax.set_ylabel(f"Relative Speedup vs {baseline} (x - 1)")
-        ax.set_title(f"GPU Speedup Comparison - Size: {size}")
+        ax.set_title(f"GPU Speedup Comparison - Size: {size} - Relative to {baseline} (log scale)")
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations],
                            rotation=45, ha="right")
