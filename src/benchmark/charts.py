@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def load_benchmark_results(filepath: str) -> pd.DataFrame:
+def load_benchmark_results(filepath: str) -> tuple[pd.DataFrame, dict]:
     """
     Load benchmark results from a JSON file.
     
@@ -21,10 +21,28 @@ def load_benchmark_results(filepath: str) -> pd.DataFrame:
         filepath: Path to the pytest-benchmark JSON output file.
     
     Returns:
-        DataFrame containing benchmark results.
+        Tuple of (DataFrame containing benchmark results, dict with device info and machine info).
     """
     with open(filepath) as f:
         data = json.load(f)
+    
+    # Extract device and machine info
+    device_info = {
+        "gpu_name": "",
+        "cpu_brand": ""
+    }
+    
+    # Get CPU brand from machine_info
+    if "machine_info" in data and "cpu" in data["machine_info"]:
+        device_info["cpu_brand"] = data["machine_info"]["cpu"].get("brand_raw", "")
+    
+    # Get GPU device name from first benchmark's extra_info
+    if data.get("benchmarks"):
+        first_benchmark = data["benchmarks"][0]
+        extra_info = first_benchmark.get("extra_info", {})
+        gpu_name = extra_info.get("device_name", "")
+        if gpu_name:
+            device_info["gpu_name"] = gpu_name
     
     results = []
     for benchmark in data["benchmarks"]:
@@ -43,13 +61,14 @@ def load_benchmark_results(filepath: str) -> pd.DataFrame:
             "operation": extra_info.get("operation", "unknown"),
         })
     
-    return pd.DataFrame(results)
+    return pd.DataFrame(results), device_info
 
 
 def create_comparison_chart(
     df: pd.DataFrame,
     output_path: str = "benchmark_comparison.png",
-    title: str = "Benchmark Comparison"
+    title: str = "Benchmark Comparison",
+    device_info: dict = None
 ) -> None:
     """
     Create bar charts comparing benchmark results across backends.
@@ -59,7 +78,10 @@ def create_comparison_chart(
         df: DataFrame with benchmark results.
         output_path: Path to save the chart.
         title: Chart title.
+        device_info: Dictionary with 'gpu_name' and 'cpu_brand' for subtitle.
     """
+    if device_info is None:
+        device_info = {"gpu_name": "", "cpu_brand": ""}
     # Get unique sizes, operations, and backends
     sizes = sorted(df["size"].unique())
     operations = sorted(df["operation"].unique())
@@ -126,7 +148,21 @@ def create_comparison_chart(
         ax.set_ylabel("Time (ms)")
         # Use log scale for readability across wide performance ranges
         ax.set_yscale("log")
-        ax.set_title(f"{title} - Size: {size} - Time in ms (log scale)")
+        
+        # Build subtitle with device information
+        subtitle_parts = []
+        if device_info.get("gpu_name"):
+            subtitle_parts.append(f"GPU: {device_info['gpu_name']}")
+        if device_info.get("cpu_brand"):
+            subtitle_parts.append(f"CPU: {device_info['cpu_brand']}")
+        subtitle = " | ".join(subtitle_parts) if subtitle_parts else ""
+        
+        if subtitle:
+            ax.set_title(f"{title} - Size: {size} - Time in ms (log scale)\n{subtitle}", 
+                        fontsize=10)
+        else:
+            ax.set_title(f"{title} - Size: {size} - Time in ms (log scale)")
+        
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations],
                            rotation=45, ha="right")
@@ -152,7 +188,8 @@ def create_comparison_chart(
 def create_speedup_chart(
     df: pd.DataFrame,
     baseline: str = "numpy",
-    output_path: str = "speedup_comparison.png"
+    output_path: str = "speedup_comparison.png",
+    device_info: dict = None
 ) -> None:
     """
     Create speedup charts showing performance relative to baseline.
@@ -162,7 +199,10 @@ def create_speedup_chart(
         df: DataFrame with benchmark results.
         baseline: Baseline backend for comparison.
         output_path: Path to save the chart.
+        device_info: Dictionary with 'gpu_name' and 'cpu_brand' for subtitle.
     """
+    if device_info is None:
+        device_info = {"gpu_name": "", "cpu_brand": ""}
     # Get unique sizes, operations, and backends
     sizes = sorted(df["size"].unique())
     operations = sorted(df["operation"].unique())
@@ -254,7 +294,21 @@ def create_speedup_chart(
                    label=f"{baseline} baseline")
         ax.set_xlabel("Operation")
         ax.set_ylabel(f"Relative Speedup vs {baseline} (x - 1)")
-        ax.set_title(f"GPU Speedup Comparison - Size: {size} - Relative to {baseline} (log scale)")
+        
+        # Build subtitle with device information
+        subtitle_parts = []
+        if device_info.get("gpu_name"):
+            subtitle_parts.append(f"GPU: {device_info['gpu_name']}")
+        if device_info.get("cpu_brand"):
+            subtitle_parts.append(f"CPU: {device_info['cpu_brand']}")
+        subtitle = " | ".join(subtitle_parts) if subtitle_parts else ""
+        
+        if subtitle:
+            ax.set_title(f"GPU Speedup Comparison - Size: {size} - Relative to {baseline} (log scale)\n{subtitle}",
+                        fontsize=10)
+        else:
+            ax.set_title(f"GPU Speedup Comparison - Size: {size} - Relative to {baseline} (log scale)")
+        
         ax.set_xticks(list(x_positions))
         ax.set_xticklabels([op.replace('_', ' ').title() for op in operations],
                            rotation=45, ha="right")
@@ -281,38 +335,36 @@ def main():
     # Find benchmark results
     input_path = Path(".")
     if input_path.is_dir():
-
         # find all JSON files that match the pattern "*_benchmark_*.json" 
         json_files = list(input_path.rglob("*_benchmark_*.json"))
         if len(json_files) == 0:
             print(f"No benchmark JSON files found in {input_path}")
             return
-        # json_file = max(json_files, key=os.path.getmtime)
-    # else:
-    #     json_file = input_path
     
     print(f"Found {len(json_files)} benchmark files in {input_path}")
     
     for json_file in json_files:
 
-        print(f"\nProcessing benchmark file: {json_file}")
+        print(f"\nGenerating charts for benchmark file: {json_file}")
 
         # Create output directory from json filename
         output_dir = Path(json_file).parent / f"{Path(json_file).stem}_charts"
         output_dir.mkdir(exist_ok=True)
         
         # Load and process results
-        df = load_benchmark_results(str(json_file))
+        df, device_info = load_benchmark_results(str(json_file))
         
         # Generate charts
         create_comparison_chart(
             df,
-            output_path=str(output_dir / "benchmark_comparison.png")
+            output_path=str(output_dir / "benchmark_comparison.png"),
+            device_info=device_info
         )
         
         create_speedup_chart(
             df,
-            output_path=str(output_dir / "speedup_comparison.png")
+            output_path=str(output_dir / "speedup_comparison.png"),
+            device_info=device_info
         )
         
         print(f"\nCharts saved to: {output_dir}")

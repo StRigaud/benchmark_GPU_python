@@ -8,7 +8,7 @@ Or for benchmark-only: pixi run benchmark
 import numpy as np
 import pytest
 
-from benchmark.utils import check_backend_availability, generate_test_data
+from benchmark.utils import check_backend_availability, generate_test_data, get_device_info
 from benchmark.operations import (
     numpy_elementwise,
     numpy_elementwise_simple,
@@ -145,6 +145,8 @@ def test_elementwise_simple_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_elementwise_simple(a) # Warm-up
     result = benchmark(numpy_elementwise_simple, a)
     assert result.shape == a.shape
@@ -159,6 +161,8 @@ def test_elementwise_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_elementwise(a) # Warm-up
     result = benchmark(numpy_elementwise, a)
     assert result.shape == a.shape
@@ -174,6 +178,8 @@ def test_gaussian_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_gaussian(a, sigma=s) # Warm-up
     result = benchmark(numpy_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -188,6 +194,8 @@ def test_slicing_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'slicing (stridded)'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_slicing(a) # Warm-up
     result = benchmark(numpy_slicing, a)
     assert True
@@ -202,6 +210,8 @@ def test_sum_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'sum'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_sum(a) # Warm-up
     result = benchmark(numpy_sum, a)
     assert True
@@ -216,6 +226,8 @@ def test_matmul_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'matmul (2d)'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     a = a[0] if len(a.shape) > 2 else a
     b = b[0] if len(b.shape) > 2 else b
     numpy_matmul(a, b) # Warm-up
@@ -232,6 +244,8 @@ def test_std_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'std'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_std(a) # Warm-up
     result = benchmark(numpy_std, a)
     assert True
@@ -246,6 +260,8 @@ def test_fft_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'fft'
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_fft(a) # Warm-up
     result = benchmark(numpy_fft, a)
     assert True
@@ -263,6 +279,8 @@ def test_convolve_numpy(benchmark, numpy_arrays):
         'backend': 'numpy',
         'operation': 'convolve({n})'.format(n=n)
     })
+    device_info = get_device_info('numpy')
+    benchmark.extra_info.update(device_info)
     numpy_convolve(a, kernel) # Warm-up
     result = benchmark(numpy_convolve, a, kernel)
     assert result.shape == a.shape
@@ -282,6 +300,8 @@ def test_elementwise_simple_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_elementwise_simple(a) # Warm-up
     result = benchmark(cupy_elementwise_simple, a)
     assert result.shape == a.shape
@@ -297,6 +317,8 @@ def test_elementwise_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_elementwise(a) # Warm-up
     result = benchmark(cupy_elementwise, a)
     assert result.shape == a.shape
@@ -313,6 +335,8 @@ def test_gaussian_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cupy_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -328,6 +352,8 @@ def test_slicing_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'slicing (stridded)'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_slicing(a) # Warm-up
     result = benchmark(cupy_slicing, a)
     assert True
@@ -343,6 +369,8 @@ def test_sum_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'sum'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_sum(a) # Warm-up
     result = benchmark(cupy_sum, a)
 
@@ -358,6 +386,8 @@ def test_matmul_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'matmul (2d)'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     a = a[0] if len(a.shape) > 2 else a
     b = b[0] if len(b.shape) > 2 else b
     cupy_matmul(a, b) # Warm-up
@@ -375,6 +405,8 @@ def test_std_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'std'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_std(a) # Warm-up
     result = benchmark(cupy_std, a)
 
@@ -389,6 +421,8 @@ def test_fft_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'fft'
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_fft(a) # Warm-up
     result = benchmark(cupy_fft, a)
     assert True
@@ -409,6 +443,8 @@ def test_convolve_cupy(benchmark, cupy_arrays):
         'backend': 'cupy',
         'operation': 'convolve({n})'.format(n=n)
     })
+    device_info = get_device_info('cupy')
+    benchmark.extra_info.update(device_info)
     cupy_convolve(a, kernel) # Warm-up
     result = benchmark(cupy_convolve, a, kernel)
     assert result.shape == a.shape
@@ -428,6 +464,8 @@ def test_elementwise_simple_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_elementwise_simple(a) # Warm-up
     result = benchmark(cle_elementwise_simple, a)
     assert result.shape == a.shape
@@ -443,6 +481,8 @@ def test_elementwise_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
@@ -459,6 +499,8 @@ def test_gaussian_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -475,6 +517,8 @@ def test_slicing_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'slicing (stridded)'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_slicing(a) # Warm-up
     result = benchmark(cle_slicing, a)
     assert True
@@ -490,6 +534,8 @@ def test_sum_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'sum'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_sum(a) # Warm-up
     result = benchmark(cle_sum, a)
 
@@ -504,6 +550,8 @@ def test_matmul_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'matmul (2d)'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     a = a[0] if len(a.shape) > 2 else a
     b = b[0] if len(b.shape) > 2 else b
     cle_matmul(a, b) # Warm-up
@@ -521,6 +569,8 @@ def test_std_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'std'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_std(a) # Warm-up
     result = benchmark(cle_std, a)
 
@@ -535,6 +585,8 @@ def test_fft_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'fft'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_fft(a) # Warm-up
     result = benchmark(cle_fft, a)
     assert True
@@ -555,6 +607,8 @@ def test_convolve_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'convolve({n})'.format(n=n)
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_convolve(a, kernel) # Warm-up
     result = benchmark(cle_convolve, a, kernel)
     assert result.shape == a.shape
@@ -570,6 +624,8 @@ def test_elementwise_simple_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_elementwise_simple(a) # Warm-up
     result = benchmark(cle_elementwise_simple, a)
     assert result.shape == a.shape
@@ -585,6 +641,8 @@ def test_elementwise_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
@@ -601,6 +659,8 @@ def test_gaussian_pyclesperanto(benchmark, cle_arrays):
         'backend': 'pyclesperanto',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('pyclesperanto')
+    benchmark.extra_info.update(device_info)
     cle_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -620,6 +680,8 @@ def test_elementwise_simple_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise_simple(a) # Warm-up
     result = benchmark(cle_elementwise_simple, a)
     assert result.shape == a.shape
@@ -635,6 +697,8 @@ def test_elementwise_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
@@ -651,6 +715,8 @@ def test_gaussian_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -667,6 +733,8 @@ def test_slicing_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'slicing (stridded)'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_slicing(a) # Warm-up
     result = benchmark(cle_slicing, a)
     assert True
@@ -682,6 +750,8 @@ def test_sum_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'sum'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_sum(a) # Warm-up
     result = benchmark(cle_sum, a)
 
@@ -696,6 +766,8 @@ def test_matmul_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'matmul (2d)'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     a = a[0] if len(a.shape) > 2 else a
     b = b[0] if len(b.shape) > 2 else b
     cle_matmul(a, b) # Warm-up
@@ -713,6 +785,8 @@ def test_std_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'std'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_std(a) # Warm-up
     result = benchmark(cle_std, a)
 
@@ -727,6 +801,8 @@ def test_fft_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'fft'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_fft(a) # Warm-up
     result = benchmark(cle_fft, a)
     assert True
@@ -747,6 +823,8 @@ def test_convolve_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'convolve({n})'.format(n=n)
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_convolve(a, kernel) # Warm-up
     result = benchmark(cle_convolve, a, kernel)
     assert result.shape == a.shape
@@ -762,6 +840,8 @@ def test_elementwise_simple_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise_simple(a) # Warm-up
     result = benchmark(cle_elementwise_simple, a)
     assert result.shape == a.shape
@@ -777,6 +857,8 @@ def test_elementwise_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
@@ -793,6 +875,8 @@ def test_gaussian_pyclesperanto_cuda(benchmark, cle_cuda_arrays):
         'backend': 'pyclesperanto (cuda)',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('pyclesperanto (cuda)')
+    benchmark.extra_info.update(device_info)
     cle_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -813,6 +897,8 @@ def test_elementwise_simple_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise_simple(a) # Warm-up
     result = benchmark(cle_elementwise_simple, a)
     assert result.shape == a.shape
@@ -828,6 +914,8 @@ def test_elementwise_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
@@ -844,6 +932,8 @@ def test_gaussian_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape
@@ -860,6 +950,8 @@ def test_slicing_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'slicing (stridded)'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_slicing(a) # Warm-up
     result = benchmark(cle_slicing, a)
     assert True
@@ -875,6 +967,8 @@ def test_sum_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'sum'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_sum(a) # Warm-up
     result = benchmark(cle_sum, a)
 
@@ -889,6 +983,8 @@ def test_matmul_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'matmul (2d)'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     a = a[0] if len(a.shape) > 2 else a
     b = b[0] if len(b.shape) > 2 else b
     cle_matmul(a, b) # Warm-up
@@ -906,6 +1002,8 @@ def test_std_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'std'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_std(a) # Warm-up
     result = benchmark(cle_std, a)
 
@@ -920,6 +1018,8 @@ def test_fft_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'fft'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_fft(a) # Warm-up
     result = benchmark(cle_fft, a)
     assert True
@@ -940,6 +1040,8 @@ def test_convolve_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'convolve({n})'.format(n=n)
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_convolve(a, kernel) # Warm-up
     result = benchmark(cle_convolve, a, kernel)
     assert result.shape == a.shape
@@ -955,6 +1057,8 @@ def test_elementwise_simple_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'elementwise_simple'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise_simple(a) # Warm-up
     result = benchmark(cle_elementwise_simple, a)
     assert result.shape == a.shape
@@ -970,6 +1074,8 @@ def test_elementwise_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'elementwise'
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_elementwise(a) # Warm-up
     result = benchmark(cle_elementwise, a)
     assert result.shape == a.shape
@@ -986,6 +1092,8 @@ def test_gaussian_pyclesperanto_metal(benchmark, cle_metal_arrays):
         'backend': 'pyclesperanto (metal)',
         'operation': 'gaussian({sigma})'.format(sigma=s)
     })
+    device_info = get_device_info('pyclesperanto (metal)')
+    benchmark.extra_info.update(device_info)
     cle_gaussian(a, sigma=s) # Warm-up
     result = benchmark(cle_gaussian, a, sigma=s)
     assert result.shape == a.shape

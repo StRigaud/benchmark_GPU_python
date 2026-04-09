@@ -102,3 +102,40 @@ def generate_test_data(size: tuple, backend: str = "numpy"):
         return cle.push(data)
     else:
         raise ValueError(f"Unknown backend: {backend}")
+
+
+def get_device_info(backend: str) -> Dict[str, str]:
+    """
+    Get device information for a given backend.
+    
+    Args:
+        backend: The backend to get device info for ("numpy", "cupy", or "pyclesperanto*").
+    
+    Returns:
+        Dictionary with device information including 'device_name'.
+    """
+    device_info = {}
+    
+    try:
+        if backend == "numpy":
+            device_info["device_name"] = "CPU"
+            device_info["device_type"] = "CPU"
+        elif backend == "cupy":
+            import cupy as cp
+            device = cp.cuda.Device()
+            device_info["device_name"] = str(cp.cuda.runtime.getDeviceProperties(device.id)['name']).strip()
+            device_info["device_type"] = "GPU (NVIDIA)"
+        elif backend in ["pyclesperanto", "pyclesperanto_cuda", "pyclesperanto_metal"]:
+            import pyclesperanto as cle
+            device_info["device_name"] = cle.get_device().name
+            if backend == "pyclesperanto_cuda":
+                device_info["device_type"] = "GPU (CUDA)"
+            elif backend == "pyclesperanto_metal":
+                device_info["device_type"] = "GPU (Metal)"
+            else:
+                device_info["device_type"] = "GPU (OpenCL)"
+    except Exception as e:
+        device_info["device_name"] = f"Unknown ({type(e).__name__})"
+        device_info["device_type"] = "Unknown"
+    
+    return device_info
