@@ -36,13 +36,15 @@ def load_benchmark_results(filepath: str) -> tuple[pd.DataFrame, dict]:
     if "machine_info" in data and "cpu" in data["machine_info"]:
         device_info["cpu_brand"] = data["machine_info"]["cpu"].get("brand_raw", "")
     
-    # Get GPU device name from first benchmark's extra_info
+    # Get GPU device name from benchmarks' extra_info (skip CPU)
     if data.get("benchmarks"):
-        first_benchmark = data["benchmarks"][0]
-        extra_info = first_benchmark.get("extra_info", {})
-        gpu_name = extra_info.get("device_name", "")
-        if gpu_name:
-            device_info["gpu_name"] = gpu_name
+        for benchmark in data["benchmarks"]:
+            extra_info = benchmark.get("extra_info", {})
+            gpu_name = extra_info.get("device_name", "")
+            if gpu_name and gpu_name != "CPU":
+                gpu_name = gpu_name.strip("b'\"")
+                device_info["gpu_name"] = gpu_name
+                break
     
     results = []
     for benchmark in data["benchmarks"]:
@@ -335,8 +337,8 @@ def main():
     # Find benchmark results
     input_path = Path(".")
     if input_path.is_dir():
-        # find all JSON files that match the pattern "*_benchmark_*.json" 
-        json_files = list(input_path.rglob("*_benchmark_*.json"))
+        # find all JSON files that match the pattern "benchmark_*.json"
+        json_files = list(input_path.rglob("benchmark_*.json"))
         if len(json_files) == 0:
             print(f"No benchmark JSON files found in {input_path}")
             return

@@ -11,6 +11,9 @@ cuda = "12"
 [tasks]
 test = "pytest tests/ -v"
 benchmark = "pytest tests/test_benchmarks.py -v --benchmark-only --benchmark-json=benchmark_results.json"
+benchmark-cuda = "pytest tests/test_benchmarks.py -v --benchmark-only -k 'not pyclesperanto or pyclesperanto_cuda' --benchmark-json=benchmark_results_cuda.json"
+benchmark-opencl = "pytest tests/test_benchmarks.py -v --benchmark-only -k 'pyclesperanto and not pyclesperanto_cuda and not pyclesperanto_metal' --benchmark-json=benchmark_results_opencl.json"
+boxplots = "python -m benchmark.boxplots"
 charts = "python -m benchmark.charts"
 install = "pip install -e ."
 
@@ -26,17 +29,18 @@ scipy = "*"
 
 [target.win-64.pypi-dependencies]
 cupy-cuda12x = ">=14.0.1, <15"
-pyclesperanto_cuda = ">=0.22.0"
+pyclesperanto_cuda = ">=0.24.0"
 
 [target.linux-64.pypi-dependencies]
 cupy-cuda12x = ">=14.0.1, <15"
-pyclesperanto_cuda = ">=0.22.0"
+pyclesperanto_cuda = ">=0.24.0"
 
 [target.osx-64.pypi-dependencies]
-pyclesperanto_metal = ">=0.22.0"
+pyclesperanto_metal = ">=0.24.0"
 
 [pypi-dependencies]
-pyclesperanto = ">=0.22.0"
-pyclesperanto_opencl = ">=0.22.0"
+pyclesperanto = ">=0.24.0"
+pyclesperanto_opencl = ">=0.24.0"
+seaborn = ">=0.13.2, <0.14"
 
 

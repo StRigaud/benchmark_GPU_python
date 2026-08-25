@@ -1,14 +1,11 @@
 """Utility functions for the benchmark library."""
 
-from typing import Dict
-
-
-def check_backend_availability() -> Dict[str, bool]:
+def check_backend_availability() -> dict[str, bool]:
     """
     Check which backends are available.
     
     Returns:
-        Dict with backend names as keys and availability as boolean values.
+        dict with backend names as keys and availability as boolean values.
     """
     backends = {
         "numpy": False,
@@ -80,31 +77,31 @@ def generate_test_data(size: tuple, backend: str = "numpy"):
         return data
     elif backend == "cupy":
         import cupy as cp
-        cp.cuda.Device(-1)
+        cp.cuda.Device(0)
         return cp.asarray(data)
     elif backend == "pyclesperanto":
         import pyclesperanto as cle
         cle.select_backend("opencl")
-        cle.select_device(1, "gpu")
+        cle.select_device(0, "gpu")
         cle.wait_for_kernel_to_finish(True)
         return cle.push(data)
     elif backend == "pyclesperanto_cuda":
         import pyclesperanto as cle
         cle.select_backend("cuda")
-        cle.select_device(1, "gpu")
+        cle.select_device(0, "gpu")
         cle.wait_for_kernel_to_finish(True)
         return cle.push(data)    
     elif backend == "pyclesperanto_metal":
         import pyclesperanto as cle
         cle.select_backend("metal")
-        cle.select_device(1, "gpu")
+        cle.select_device(0, "gpu")
         cle.wait_for_kernel_to_finish(True)
         return cle.push(data)
     else:
         raise ValueError(f"Unknown backend: {backend}")
 
 
-def get_device_info(backend: str) -> Dict[str, str]:
+def get_device_info(backend: str) -> dict[str, str]:
     """
     Get device information for a given backend.
     
@@ -112,7 +109,7 @@ def get_device_info(backend: str) -> Dict[str, str]:
         backend: The backend to get device info for ("numpy", "cupy", or "pyclesperanto*").
     
     Returns:
-        Dictionary with device information including 'device_name'.
+        dictionary with device information including 'device_name'.
     """
     device_info = {}
     

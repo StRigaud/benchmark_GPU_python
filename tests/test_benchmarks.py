@@ -44,8 +44,8 @@ BACKENDS = check_backend_availability()
 
 # Define test array sizes
 SIZES = {
-    "134Mb": (128, 512, 512), #134Mb
-    "21247Mb": (128, 2048, 2048), #21247Mb
+    "128MB": (128, 512, 512), #128
+    "2048MB": (128, 2048, 2048), #2048
 }
 
 
