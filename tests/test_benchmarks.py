@@ -83,7 +83,8 @@ def test_benchmark(benchmark, backend, operation, size_name):
     })
     benchmark.extra_info.update(get_device_info(backend))
 
-    func(*args, **kwargs)  # warm-up
+    if backend != "numpy":
+        func(*args, **kwargs)  # warm-up (GPU only: kernel compilation, allocations)
     result = benchmark(func, *args, **kwargs)
 
     # Basic sanity check on the output shape
