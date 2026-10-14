@@ -14,11 +14,11 @@ from scipy import ndimage as ndi
 # ============================================================================
 
 def numpy_elementwise_simple(a: np.ndarray) -> np.ndarray:
-    """Add two arrays using NumPy."""
+    """Square every element using NumPy."""
     return a ** 2
 
 def numpy_elementwise(a: np.ndarray) -> np.ndarray:
-    """Add two arrays using NumPy."""
+    """Compute sin^2 + cos^2 element-wise using NumPy."""
     return np.sin(a) ** 2 + np.cos(a) ** 2
 
 
@@ -28,7 +28,7 @@ def numpy_gaussian(data: np.ndarray, sigma: float = 1.0) -> np.ndarray:
 
 
 def numpy_slicing(data: np.ndarray) -> np.ndarray:
-    """Apply threshold using NumPy."""
+    """Strided slice (every 3rd plane along axis 0) using NumPy."""
     return data[::3].copy()
 
 def numpy_sum(data: np.ndarray) -> float:
@@ -61,14 +61,14 @@ def numpy_convolve(data: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 # ============================================================================
 
 def cupy_elementwise_simple(a):
-    """Add two arrays using CuPy."""
+    """Square every element using CuPy."""
     import cupy as cp
     result = a ** 2
     cp.cuda.Stream.null.synchronize()  # Ensure GPU computation is complete
     return result
 
 def cupy_elementwise(a):
-    """Add two arrays using CuPy."""
+    """Compute sin^2 + cos^2 element-wise using CuPy."""
     import cupy as cp
     result = cp.sin(a) ** 2 + cp.cos(a) ** 2
     cp.cuda.Stream.null.synchronize()  # Ensure GPU computation is complete
@@ -85,7 +85,7 @@ def cupy_gaussian(data, sigma: float = 1.0):
 
 
 def cupy_slicing(data):
-    """Apply threshold using CuPy."""
+    """Strided slice (every 3rd plane along axis 0) using CuPy."""
     import cupy as cp
     result = data[::3].copy()
     cp.cuda.Stream.null.synchronize()
@@ -137,13 +137,13 @@ def cupy_convolve(data, kernel):
 # ============================================================================
 
 def cle_elementwise_simple(a):
-    """Add two arrays using pyclesperanto."""
+    """Square every element using pyclesperanto."""
     import pyclesperanto as cle
     return cle.power(a, scalar=2)
 
 
 def cle_elementwise(a):
-    """Add two arrays using pyclesperanto."""
+    """Compute sin^2 + cos^2 element-wise using pyclesperanto."""
     import pyclesperanto as cle
     return cle.evaluate("pow(sin(a), 2) + pow(cos(a), 2)", {"a": a})
 
@@ -155,7 +155,7 @@ def cle_gaussian(data, sigma: float = 1.0):
 
 
 def cle_slicing(data):
-    """Apply threshold using pyclesperanto."""
+    """Strided slice (every 3rd plane along axis 0) using pyclesperanto."""
     import pyclesperanto as cle
     return data[::3]
 

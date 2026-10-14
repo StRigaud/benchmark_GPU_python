@@ -1,138 +1,97 @@
 """Utility functions for the benchmark library."""
 
+import importlib
+
+# Backend keys (used in test ids / -k filters) -> label stored in the benchmark JSON.
+# The labels are what charts.py and boxplots.py expect.
+BACKEND_LABELS = {
+    "numpy": "numpy",
+    "cupy": "cupy",
+    "pyclesperanto": "pyclesperanto",  # OpenCL
+    "pyclesperanto_cuda": "pyclesperanto (cuda)",
+    "pyclesperanto_metal": "pyclesperanto (metal)",
+}
+
+DEVICE_TYPES = {
+    "numpy": "CPU",
+    "cupy": "GPU (NVIDIA)",
+    "pyclesperanto": "GPU (OpenCL)",
+    "pyclesperanto_cuda": "GPU (CUDA)",
+    "pyclesperanto_metal": "GPU (Metal)",
+}
+
+
+CLE_BACKEND_NAMES = {
+    "pyclesperanto": "opencl",
+    "pyclesperanto_cuda": "cuda",
+    "pyclesperanto_metal": "metal",
+}
+
+
 def check_backend_availability() -> dict[str, bool]:
-    """
-    Check which backends are available.
-    
-    Returns:
-        dict with backend names as keys and availability as boolean values.
-    """
-    backends = {
-        "numpy": False,
-        "cupy": False,
-        "pyclesperanto": False,
-        "pyclesperanto_cuda": False,
-        "pyclesperanto_metal": False,
-    }
-    
-    # NumPy should always be available
-    try:
-        import numpy
-        backends["numpy"] = True
-    except ImportError:
-        pass
-    
-    # Check CuPy
+    """Return {backend key: available} for every key in BACKEND_LABELS."""
+    backends = {name: False for name in BACKEND_LABELS}
+    backends["numpy"] = True
+
     try:
         import cupy
-        # Try to get a device to verify GPU is available
-        # cupy.cuda.Device(0).compute_capability
-        backends["cupy"] = True
-    except (ImportError, Exception):
-        pass
-    
-    # Check pyclesperanto
-    try:
-        import pyclesperanto as cle
-        backends["pyclesperanto"] = True
-    except ImportError:
-        pass
-    
-    # Check pyclesperanto cuda
-    try:
-        import pyclesperanto as cle
-        if "cuda" in cle.list_available_backends():
-            backends["pyclesperanto_cuda"] = True
-    except ImportError:
+        backends["cupy"] = cupy.cuda.runtime.getDeviceCount() > 0
+    except Exception:
         pass
 
-    # Check pyclesperanto metal
     try:
         import pyclesperanto as cle
-        if "metal" in cle.list_available_backends():
-            backends["pyclesperanto_metal"] = True
-    except ImportError:
+        available = cle.list_available_backends()
+        backends["pyclesperanto"] = "opencl" in available
+        backends["pyclesperanto_cuda"] = "cuda" in available
+        backends["pyclesperanto_metal"] = "metal" in available
+    except Exception:
         pass
 
     return backends
 
 
-def generate_test_data(size: tuple, backend: str = "numpy"):
-    """
-    Generate test data for benchmarking.
-    
-    Args:
-        size: Tuple specifying the shape of the array.
-        backend: The backend to use ("numpy", "cupy", or "pyclesperanto").
-    
-    Returns:
-        Array of the specified size and backend type.
-    """
-    import numpy as np
-    
-    rng = np.random.default_rng(42)
-    data = rng.random(size, dtype=np.float32)
-    
+def to_backend(data, backend: str):
+    """Move a numpy array to the given backend (no-op for numpy)."""
     if backend == "numpy":
         return data
-    elif backend == "cupy":
+    if backend == "cupy":
         import cupy as cp
-        cp.cuda.Device(0)
         return cp.asarray(data)
-    elif backend == "pyclesperanto":
+    if backend.startswith("pyclesperanto"):
         import pyclesperanto as cle
-        cle.select_backend("opencl")
+        cle.select_backend(CLE_BACKEND_NAMES[backend])
         cle.select_device(0, "gpu")
         cle.wait_for_kernel_to_finish(True)
         return cle.push(data)
-    elif backend == "pyclesperanto_cuda":
-        import pyclesperanto as cle
-        cle.select_backend("cuda")
-        cle.select_device(0, "gpu")
-        cle.wait_for_kernel_to_finish(True)
-        return cle.push(data)    
-    elif backend == "pyclesperanto_metal":
-        import pyclesperanto as cle
-        cle.select_backend("metal")
-        cle.select_device(0, "gpu")
-        cle.wait_for_kernel_to_finish(True)
-        return cle.push(data)
-    else:
-        raise ValueError(f"Unknown backend: {backend}")
+    raise ValueError(f"Unknown backend: {backend}")
+
+
+def generate_test_data(size: tuple, backend: str = "numpy"):
+    """Random float32 array of the given shape on the given backend."""
+    import numpy as np
+
+    rng = np.random.default_rng(42)
+    return to_backend(rng.random(size, dtype=np.float32), backend)
 
 
 def get_device_info(backend: str) -> dict[str, str]:
-    """
-    Get device information for a given backend.
-    
-    Args:
-        backend: The backend to get device info for ("numpy", "cupy", or "pyclesperanto*").
-    
-    Returns:
-        dictionary with device information including 'device_name'.
-    """
-    device_info = {}
-    
+    """Return {'device_name', 'device_type', 'library_version'} for a backend key."""
+    info = {"device_type": DEVICE_TYPES.get(backend, "Unknown")}
+    lib = "numpy" if backend == "numpy" else "cupy" if backend == "cupy" else "pyclesperanto"
+    try:
+        info["library_version"] = f"{lib} {importlib.import_module(lib).__version__}"
+    except Exception:
+        info["library_version"] = f"{lib} unknown"
     try:
         if backend == "numpy":
-            device_info["device_name"] = "CPU"
-            device_info["device_type"] = "CPU"
+            info["device_name"] = "CPU"
         elif backend == "cupy":
             import cupy as cp
-            device = cp.cuda.Device()
-            device_info["device_name"] = str(cp.cuda.runtime.getDeviceProperties(device.id)['name']).strip()
-            device_info["device_type"] = "GPU (NVIDIA)"
-        elif backend in ["pyclesperanto", "pyclesperanto_cuda", "pyclesperanto_metal"]:
+            info["device_name"] = str(cp.cuda.runtime.getDeviceProperties(cp.cuda.Device().id)["name"]).strip()
+        else:
             import pyclesperanto as cle
-            device_info["device_name"] = cle.get_device().name
-            if backend == "pyclesperanto_cuda":
-                device_info["device_type"] = "GPU (CUDA)"
-            elif backend == "pyclesperanto_metal":
-                device_info["device_type"] = "GPU (Metal)"
-            else:
-                device_info["device_type"] = "GPU (OpenCL)"
+            info["device_name"] = cle.get_device().name
     except Exception as e:
-        device_info["device_name"] = f"Unknown ({type(e).__name__})"
-        device_info["device_type"] = "Unknown"
-    
-    return device_info
+        info["device_name"] = f"Unknown ({type(e).__name__})"
+    return info
