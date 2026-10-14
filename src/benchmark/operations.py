@@ -181,7 +181,7 @@ def cle_std(data):
 def cle_fft(data):
     """Compute FFT using pyclesperanto."""
     import pyclesperanto as cle
-    return cle.fft(data)
+    return cle.fft.fft(data)
 
 
 def cle_convolve(data, kernel):
