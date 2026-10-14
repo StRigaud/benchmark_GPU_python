@@ -4,7 +4,6 @@
 #SBATCH --error=slurm_%j.err
 #SBATCH --partition=g
 #SBATCH --gres=gpu:A100:1
-#SBATCH --exclude=clip-g1-1,clip-g2-1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=32G
 #SBATCH --time=04:00:00
@@ -51,3 +50,4 @@ apptainer exec --cleanenv --nv \
 apptainer exec --cleanenv --nv \
     --env "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}" \
     --bind "$APPTAINER_BINDS" --pwd $PWD "$CONTAINER" pixi run benchmark-opencl
+
