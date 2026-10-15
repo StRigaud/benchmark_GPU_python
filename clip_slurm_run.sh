@@ -24,8 +24,9 @@ if [ -d /etc/OpenCL/vendors ]; then
 fi
 APPTAINER_BINDS_CUDA="$APPTAINER_BINDS,$CUDA_COMPAT_DIR:$CUDA_COMPAT_DIR:ro"
 
-# Do NOT load a host CUDA module: the pixi env bundles its own CUDA runtime/nvrtc
-# for cupy and pyclesperanto_cuda. Leaking a host module's LD_LIBRARY_PATH (which
+# Do NOT load a host CUDA module: the pixi env bundles its own CUDA 12.6 runtime/nvrtc/
+# cublas/cufft/headers (conda-forge cupy + cuda-version 12.6, see pixi.toml) and
+# pyclesperanto_cuda ships its own CUDA 12.6 libs. Leaking a host module's LD_LIBRARY_PATH (which
 # includes its compile-time stub libcuda.so) into the container shadows the real
 # GPU driver library bound in by --nv, making the driver look like an old version
 # and breaking PTX JIT loading. --cleanenv guarantees no such leakage happens.
@@ -45,9 +46,9 @@ unset CUDA_HOME CUDA_PATH CUDA_ROOT EBROOTCUDA EBVERSIONCUDA EBDEVELCUDA LD_LIBR
 apptainer exec --cleanenv --nv \
     --env "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}" \
     --env "LD_LIBRARY_PATH=${CUDA_COMPAT_DIR}" \
-    --bind "$APPTAINER_BINDS_CUDA" --pwd $PWD "$CONTAINER" pixi run benchmark-cuda
+    --bind "$APPTAINER_BINDS_CUDA" --pwd $PWD "$CONTAINER" pixi run --frozen benchmark-cuda
 
 apptainer exec --cleanenv --nv \
     --env "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-}" \
-    --bind "$APPTAINER_BINDS" --pwd $PWD "$CONTAINER" pixi run benchmark-opencl
+    --bind "$APPTAINER_BINDS" --pwd $PWD "$CONTAINER" pixi run --frozen benchmark-opencl
 

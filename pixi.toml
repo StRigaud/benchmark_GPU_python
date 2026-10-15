@@ -32,8 +32,18 @@ scipy = "*"
 cupy-cuda12x = ">=14.0.1, <15"
 pyclesperanto_cuda = ">=0.25.0"
 
+# Linux: cupy comes from conda-forge, built against CUDA 12.6 (matches pyclesperanto_cuda and the
+# cuda-compat-12-6 libcuda used on the HPC). Provides nvrtc, cublas, cufft and the CUDA headers.
+[target.linux-64.dependencies]
+cuda-version = "12.6.*"
+cupy = ">=14.0.1,<15"
+cuda-cudart-dev = "*"
+cuda-nvrtc-dev = "*"
+cuda-cccl_linux-64 = "*"
+libcublas-dev = "*"
+libcufft-dev = "*"
+
 [target.linux-64.pypi-dependencies]
-cupy-cuda12x = ">=14.0.1, <15"
 pyclesperanto_cuda = ">=0.25.0"
 
 [target.osx-64.pypi-dependencies]
